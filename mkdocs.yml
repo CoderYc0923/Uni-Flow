@@ -2,9 +2,9 @@ site_name: Uni-Flow
 site_description: 可依赖的 Agent 统一编排标准库
 # 首次启用 GitHub Pages 后改为真实地址，例如：
 # site_url: https://OWNER.github.io/Uni-Flow/
-site_url: https://OWNER.github.io/Uni-Flow/
-repo_url: https://github.com/OWNER/Uni-Flow
-repo_name: OWNER/Uni-Flow
+site_url: https://CoderYc0923.github.io/Uni-Flow/
+repo_url: https://github.com/CoderYc0923/Uni-Flow
+repo_name: CoderYc0923/Uni-Flow
 edit_uri: edit/main/docs-site/
 
 docs_dir: docs-site
