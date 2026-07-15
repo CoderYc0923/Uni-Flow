@@ -1,33 +1,43 @@
 # GitHub Pages 部署
 
-本仓库使用 GitHub Actions 构建 MkDocs 并发布到 GitHub Pages。构建产物目录为 `site/`（已写入 `.gitignore`，**不要提交**）。
+本仓库用 **官方 GitHub Pages Actions**（`upload-pages-artifact` + `deploy-pages`）发布 MkDocs，不是推 `gh-pages` 分支。
+
+构建产物目录为 `site/`（已写入 `.gitignore`，**不要提交**）。
 
 ## 启用步骤
 
 1. 仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**
-2. 确认已合并工作流文件：`.github/workflows/docs.yml`
-3. 推送到默认分支（`main`）或手动触发 workflow（`workflow_dispatch`）
-4. 部署成功后，将根目录 `mkdocs.yml` 中的占位替换为真实地址：
+2. 确认已合并工作流：`.github/workflows/docs.yml`
+3. 推送到 `main`，或在 Actions 里对 **Docs** 点 **Run workflow**
+4. 在 Actions 中确认出现绿色的 **build** + **deploy**；部署环境名为 `github-pages`
+5. `mkdocs.yml` 中站点地址应类似：
 
 ```yaml
-site_url: https://<OWNER>.github.io/Uni-Flow/
-repo_url: https://github.com/<OWNER>/Uni-Flow
-repo_name: <OWNER>/Uni-Flow
+site_url: https://CoderYc0923.github.io/Uni-Flow/
+repo_url: https://github.com/CoderYc0923/Uni-Flow
+repo_name: CoderYc0923/Uni-Flow
 ```
 
-公共 URL 模式一般为：`https://<OWNER>.github.io/<REPO>/`。
+公共 URL：`https://<OWNER>.github.io/<REPO>/`（用户名大小写不敏感，路径里仓库名一般要与 GitHub 仓库名一致）。
+
+## 与旧方式的区别
+
+| 方式 | Pages Source | 说明 |
+|------|----------------|------|
+| **本仓库（推荐）** | GitHub Actions | `mkdocs build` → artifact → `deploy-pages` |
+| `peaceiris` / `mkdocs gh-deploy` | Deploy from a branch（`gh-pages`） | 推分支发布；和「Source = GitHub Actions」不匹配 |
+
+若 Source 选了 GitHub Actions，却用 `peaceiris` 只推分支，站点会一直 **404**。
 
 ## 本地构建
 
 ```bash
 pip install -r requirements-docs.txt
 mkdocs build
-# 输出在 site/；失败时检查 mkdocs.yml 与 docs-site/ 导航路径
 ```
 
 ## 维护说明
 
-- 文档源只改 `docs-site/` 与 `mkdocs.yml`；勿把 `site/` 提交进 Git
-- CI 安装 `requirements-docs.txt` 后执行 `mkdocs build`，再用 `peaceiris/actions-gh-pages` 发布 `site/`
-- 若权限失败：检查 workflow 的 `contents: write`（及 Pages 相关）permissions
-- README 与站点职责分离：README 只做门户，深度教程只维护在本站点
+- 只改 `docs-site/` 与 `mkdocs.yml`；勿提交 `site/`
+- 权限失败时检查：Settings → Actions → General → Workflow permissions 允许读写，且 Pages Source = GitHub Actions
+- 首次部署后若短暂 404，等 1–2 分钟再刷新
