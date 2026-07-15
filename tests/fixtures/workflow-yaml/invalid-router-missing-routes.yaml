@@ -1,0 +1,11 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: fixture-router-no-routes
+spec:
+  units:
+    - id: r
+      uses: builtin.mock
+  flow:
+    type: router
+    routerUnit: r

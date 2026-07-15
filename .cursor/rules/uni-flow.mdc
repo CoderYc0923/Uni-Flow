@@ -1,0 +1,17 @@
+---
+description: Uni-Flow orchestration conventions for humans and AI agents
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Uni-Flow orchestration discipline
+
+1. **Topology belongs in YAML** — Change workflow topology (`units`, `flow`, `policy`, routes, DAG edges) in `uniflow.workflow.yaml` (or project Workflow YAML), not by inventing a parallel scheduler in application code.
+2. **New domain capability → `uses` plugin** — Add a plugin factory, register it in `createEngineFromYaml(..., { registry })`, and reference it as `uses: namespace.name`. Do not bury domain agents as one-off ControlFlow trees outside the registry.
+3. **No hand-written multi-agent for/while schedulers** — Do not replace ControlFlow / YAML with ad-hoc loops that fan out agents. Use Sequential / Parallel / Router / Loop / DAG / Delegation (or Composite via the code API when YAML v1 cannot express it).
+4. **Validate after YAML edits** — Run `npx uniflow validate <path>` (or `npm run build && node dist/cli/uniflow.js validate <path>`) and fix schema errors before considering the change done.
+
+Schema: `schemas/uniflow.workflow.schema.json`  
+Templates: `examples/templates/`  
+Loader API: `createEngineFromYaml`

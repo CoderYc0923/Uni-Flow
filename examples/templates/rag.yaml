@@ -1,0 +1,26 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: template-rag
+  description: RAG template — retrieve then generate (register project plugins for uses)
+spec:
+  policy:
+    budget:
+      maxTokens: 80000
+      maxCost: 2
+  units:
+    - id: retrieve
+      uses: builtin.mock
+      config:
+        response: "retrieved chunks"
+      contextPolicy:
+        vectorMemory:
+          enabled: true
+          topK: 5
+    - id: generate
+      uses: builtin.mock
+      config:
+        response: "grounded answer"
+  flow:
+    type: sequential
+    order: [retrieve, generate]

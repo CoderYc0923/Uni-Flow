@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: uniflow-sdk
+Version: 0.1.0
+Summary: Uni-Flow Python SDK — LangGraph/LangChain Sidecar adapters
+Requires-Python: >=3.10
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: jsonschema>=4.0
+Provides-Extra: langgraph
+Requires-Dist: langgraph>=0.2; extra == "langgraph"
+Provides-Extra: langchain
+Requires-Dist: langchain>=0.3; extra == "langchain"

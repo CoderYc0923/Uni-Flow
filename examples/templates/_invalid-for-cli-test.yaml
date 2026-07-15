@@ -1,0 +1,5 @@
+apiVersion: wrong/v1
+kind: NotWorkflow
+metadata:
+  id: intentionally-invalid
+spec: {}

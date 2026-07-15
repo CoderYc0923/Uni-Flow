@@ -1,0 +1,87 @@
+site_name: Uni-Flow
+site_description: 可依赖的 Agent 统一编排标准库
+# 首次启用 GitHub Pages 后改为真实地址，例如：
+# site_url: https://OWNER.github.io/Uni-Flow/
+site_url: https://OWNER.github.io/Uni-Flow/
+repo_url: https://github.com/OWNER/Uni-Flow
+repo_name: OWNER/Uni-Flow
+edit_uri: edit/main/docs-site/
+
+docs_dir: docs-site
+site_dir: site
+
+theme:
+  name: material
+  language: zh
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: 切换到深色模式
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: 切换到浅色模式
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+
+plugins:
+  - search:
+      lang:
+        - zh
+        - en
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - 首页: index.md
+  - 入门:
+      - 安装: getting-started/install.md
+      - 快速开始: getting-started/quickstart.md
+      - 核心概念: getting-started/concepts.md
+  - 原理:
+      - 设计理念: concepts/philosophy.md
+      - 四层架构: concepts/architecture.md
+      - 执行管线: concepts/pipeline.md
+      - ControlFlow vs ReAct: concepts/controlflow-vs-react.md
+  - 编排:
+      - YAML 编排: orchestration/yaml.md
+      - validate: orchestration/validate.md
+      - uses 与插件: orchestration/uses-plugins.md
+      - 跨语言: orchestration/cross-lang.md
+  - 参考:
+      - API 速查: reference/api.md
+      - 远程 Unit 契约: reference/remote-unit.md
+      - OpenSpec 与设计长文: reference/openspec-index.md
+      - 示例目录: reference/examples.md
+      - FAQ: reference/faq.md
+      - Agent 约定: reference/agents.md
+  - 运维:
+      - GitHub Pages 部署: ops/github-pages.md
+      - 贡献: ops/contributing.md

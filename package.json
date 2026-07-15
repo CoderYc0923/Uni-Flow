@@ -1,0 +1,46 @@
+{
+  "name": "uni-flow",
+  "version": "0.1.0",
+  "description": "Production-grade unified agent workflow orchestration",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schemas/uniflow.workflow.schema.json": "./schemas/uniflow.workflow.schema.json"
+  },
+  "bin": {
+    "uniflow": "./dist/cli/uniflow.js"
+  },
+  "files": [
+    "dist",
+    "schemas"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "uniflow": "node ./dist/cli/uniflow.js"
+  },
+  "dependencies": {
+    "@mariozechner/pi-agent-core": "^0.73.1",
+    "ajv": "^8.20.0",
+    "yaml": "^2.9.0"
+  },
+  "optionalDependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "ioredis": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

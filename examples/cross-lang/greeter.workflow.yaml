@@ -1,0 +1,12 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: cross-lang-greeter
+  description: Shared minimal workflow for TS/Python/Java demos
+spec:
+  units:
+    - id: greet
+      uses: demo.greeter
+  flow:
+    type: sequential
+    order: [greet]

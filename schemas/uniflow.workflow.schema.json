@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uni-flow.dev/schemas/uniflow.workflow.schema.json",
+  "title": "Uni-Flow Workflow",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {
+      "const": "uniflow/v1"
+    },
+    "kind": {
+      "const": "Workflow"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["units", "flow"],
+      "properties": {
+        "entry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy": {
+          "$ref": "#/$defs/policy"
+        },
+        "units": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/unit"
+          }
+        },
+        "flow": {
+          "$ref": "#/$defs/flow"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "uses"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uses": {
+          "type": "string",
+          "minLength": 1
+        },
+        "config": {
+          "type": "object"
+        },
+        "contextPolicy": {
+          "type": "object"
+        },
+        "policyOverrides": {
+          "$ref": "#/$defs/policyPartial"
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "retry": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxAttempts": { "type": "integer", "minimum": 0 },
+            "backoff": { "enum": ["fixed", "exponential"] },
+            "baseMs": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "timeout": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "unitMs": { "type": "integer", "minimum": 1 },
+            "workflowMs": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxTokens": { "type": "number", "minimum": 0 },
+            "maxCost": { "type": "number", "minimum": 0 }
+          }
+        },
+        "concurrency": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxParallelUnits": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "circuitBreaker": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "failureThreshold": { "type": "integer", "minimum": 1 },
+            "resetMs": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "rateLimit": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxRequestsPerMinute": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "policyPartial": {
+      "$ref": "#/$defs/policy"
+    },
+    "flow": {
+      "oneOf": [
+        { "$ref": "#/$defs/flowSequential" },
+        { "$ref": "#/$defs/flowParallel" },
+        { "$ref": "#/$defs/flowRouter" },
+        { "$ref": "#/$defs/flowLoop" },
+        { "$ref": "#/$defs/flowDag" },
+        { "$ref": "#/$defs/flowDelegation" }
+      ]
+    },
+    "flowSequential": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "sequential" },
+        "order": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      }
+    },
+    "flowParallel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "units", "reducer"],
+      "properties": {
+        "type": { "const": "parallel" },
+        "units": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "reducer": { "type": "string", "minLength": 1 },
+        "failureStrategy": {
+          "enum": ["fail-fast", "collect-errors", "best-effort"]
+        }
+      }
+    },
+    "flowRouter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "routerUnit", "routes"],
+      "properties": {
+        "type": { "const": "router" },
+        "routerUnit": { "type": "string", "minLength": 1 },
+        "routes": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "flowLoop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "unit"],
+      "properties": {
+        "type": { "const": "loop" },
+        "unit": { "type": "string", "minLength": 1 },
+        "maxIterations": { "type": "integer", "minimum": 1 },
+        "untilStateKey": { "type": "string", "minLength": 1 }
+      }
+    },
+    "flowDag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "planner", "executors", "aggregator"],
+      "properties": {
+        "type": { "const": "dag" },
+        "planner": { "type": "string", "minLength": 1 },
+        "aggregator": { "type": "string", "minLength": 1 },
+        "executors": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "flowDelegation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "orchestrator", "specialists"],
+      "properties": {
+        "type": { "const": "delegation" },
+        "orchestrator": { "type": "string", "minLength": 1 },
+        "specialists": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      }
+    }
+  }
+}

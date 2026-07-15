@@ -1,0 +1,20 @@
+{
+  "request": {
+    "input": {
+      "task": "golden",
+      "context": "ctx"
+    }
+  },
+  "response": {
+    "content": "hello golden",
+    "toolCalls": [],
+    "stopReason": "stop",
+    "metadata": {},
+    "tokenUsage": {
+      "promptTokens": 1,
+      "completionTokens": 2,
+      "totalTokens": 3,
+      "estimatedCost": 0
+    }
+  }
+}

@@ -1,0 +1,10 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: fixture-valid-sequential
+spec:
+  units:
+    - id: a
+      uses: builtin.mock
+  flow:
+    type: sequential

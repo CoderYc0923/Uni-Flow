@@ -1,0 +1,47 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: template-vertical-transaction
+  description: Vertical transaction (e.g. accounting) — router to domain units
+spec:
+  entry: intent-router
+  policy:
+    retry:
+      maxAttempts: 3
+      backoff: exponential
+      baseMs: 500
+    timeout:
+      unitMs: 120000
+      workflowMs: 600000
+    budget:
+      maxTokens: 80000
+      maxCost: 2
+  units:
+    - id: intent-router
+      uses: builtin.mock
+      config:
+        route: record
+        response: record
+    - id: record
+      uses: builtin.mock
+      config:
+        response: "recorded"
+    - id: query
+      uses: builtin.mock
+      config:
+        response: "queried"
+    - id: general
+      uses: builtin.mock
+      config:
+        response: "chatted"
+      contextPolicy:
+        vectorMemory:
+          enabled: true
+          topK: 5
+  flow:
+    type: router
+    routerUnit: intent-router
+    routes:
+      record: record
+      query: query
+      general: general

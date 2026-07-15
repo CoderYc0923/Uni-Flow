@@ -1,0 +1,25 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: yaml-sequential-example
+  description: Runnable sequential example using builtin.mock
+spec:
+  policy:
+    timeout:
+      unitMs: 120000
+      workflowMs: 600000
+    budget:
+      maxTokens: 80000
+      maxCost: 2
+  units:
+    - id: research
+      uses: builtin.mock
+      config:
+        response: "researched notes"
+    - id: write
+      uses: builtin.mock
+      config:
+        response: "written draft"
+  flow:
+    type: sequential
+    order: [research, write]

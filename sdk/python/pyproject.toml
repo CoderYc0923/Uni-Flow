@@ -1,0 +1,13 @@
+[project]
+name = "uniflow-sdk"
+version = "0.1.0"
+description = "Uni-Flow Python SDK — LangGraph/LangChain Sidecar adapters"
+requires-python = ">=3.10"
+dependencies = [
+  "pyyaml>=6.0",
+  "jsonschema>=4.0",
+]
+
+[project.optional-dependencies]
+langgraph = ["langgraph>=0.2"]
+langchain = ["langchain>=0.3"]

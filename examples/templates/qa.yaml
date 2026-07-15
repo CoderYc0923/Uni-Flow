@@ -1,0 +1,25 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: template-qa
+  description: Q&A template — replace builtin.mock with project plugins
+spec:
+  entry: answer
+  policy:
+    timeout:
+      unitMs: 60000
+      workflowMs: 300000
+    budget:
+      maxTokens: 40000
+      maxCost: 1
+  units:
+    - id: answer
+      uses: builtin.mock
+      config:
+        response: "answer placeholder"
+      contextPolicy:
+        vectorMemory:
+          enabled: false
+  flow:
+    type: sequential
+    order: [answer]

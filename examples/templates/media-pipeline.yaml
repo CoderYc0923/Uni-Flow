@@ -1,0 +1,29 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: template-media-pipeline
+  description: Media pipeline — sequential stages (transcribe → edit → export)
+spec:
+  policy:
+    timeout:
+      unitMs: 300000
+      workflowMs: 1800000
+    budget:
+      maxTokens: 100000
+      maxCost: 5
+  units:
+    - id: transcribe
+      uses: builtin.mock
+      config:
+        response: "transcript"
+    - id: edit
+      uses: builtin.mock
+      config:
+        response: "edited timeline"
+    - id: export
+      uses: builtin.mock
+      config:
+        response: "exported artifact"
+  flow:
+    type: sequential
+    order: [transcribe, edit, export]
