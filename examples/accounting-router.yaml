@@ -1,0 +1,33 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: accounting-router-demo
+  description: Mock intent router → record | general (accounting spine demo)
+spec:
+  policy:
+    timeout:
+      unitMs: 120000
+      workflowMs: 600000
+    budget:
+      maxTokens: 80000
+      maxCost: 2
+  units:
+    - id: intent-router
+      uses: builtin.mock
+      config:
+        route: record
+        response: record
+    - id: record
+      uses: builtin.mock
+      config:
+        response: "recorded: lunch 32"
+    - id: general
+      uses: builtin.mock
+      config:
+        response: "chatted"
+  flow:
+    type: router
+    routerUnit: intent-router
+    routes:
+      record: record
+      general: general

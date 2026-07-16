@@ -2,6 +2,8 @@
 
 Conventions for coding agents working in this repository.
 
+**Human narrative (what / why / empty-shell):** start at `docs-site/understand/` (MkDocs). Do not duplicate long rationale here — keep this file as hard rules only.
+
 ## Orchestration (YAML-first)
 
 1. Change workflow **topology** in Workflow YAML (`apiVersion: uniflow/v1`), not with a second hand-rolled scheduler.
@@ -48,8 +50,9 @@ Complex Composite topologies not in YAML v1 → use code API (`createWorkflowEng
 | CLI | `dist/cli/uniflow.js` |
 | Templates | `examples/templates/` |
 | Cursor rule | `.cursor/rules/uni-flow.mdc` |
-| Docs site source | `docs-site/` + root `mkdocs.yml`（预览：`pip install -r requirements-docs.txt && mkdocs serve`） |
+| Docs site (人读主路径) | `docs-site/understand/` · `docs-site/hands-on/` + root `mkdocs.yml`（`mkdocs serve`） |
 | Docs deploy | `.github/workflows/docs.yml` → GitHub Pages（`site/` 勿提交） |
+| Design appendix | `Agent统一工作流模式设计.md`（理论推导；入门先看 docs-site） |
 
 ## Dual-track
 

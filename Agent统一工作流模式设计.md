@@ -1,11 +1,35 @@
 # Agent 统一工作流模式设计
 
+> **读者导读（请先看这里）**  
+> 人读入门、记账场景、「是不是空壳」请先走文档站：[`docs-site/understand/`](./docs-site/understand/what-it-solves.md)（本地 `mkdocs serve`）。  
+> **本文是附录**：统一公式推导、模式映射与接口草图，不是 Getting Started。对外叙事以文档站为准。
+
 > 基于 pi-agent-core 的 Agent Loop + 事件驱动 + Steering/FollowUp 机制，抽象出一套能够逻辑自洽地涵盖 ReAct、Plan-Execute、Multi-Agent、Router 等所有主流 Agent 设计模式的统一工作流模型。
+
+---
+
+## 0. 业务锚点：记账意图分流（与文档站主故事对齐）
+
+用户一句话进来——「午饭 32」或「今天天气怎么样」：
+
+```text
+用户话 → Router Unit（判意图）
+            ├ record → 记账 Unit
+            └ general → 闲聊 Unit
+```
+
+| 模式视角 | 工作流单元 | 控制流 |
+|----------|------------|--------|
+| Router（记账主故事） | Router + record + general | 条件分支分发 |
+
+可运行 Mock YAML：`examples/accounting-router.yaml`。  
+下文的「代码审查」仍可作为全混合模式副例；**入门请优先对照记账 Router。**
 
 ---
 
 ## 目录
 
+0. [业务锚点：记账意图分流](#0-业务锚点记账意图分流与文档站主故事对齐)
 1. [核心洞察](#1-核心洞察)
 2. [三层抽象模型](#2-三层抽象模型)
 3. [第一层：WorkflowUnit —— 原子 Agent 单元](#3-第一层workflowunit--原子-agent-单元)

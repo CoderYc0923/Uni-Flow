@@ -1,40 +1,31 @@
 # Uni-Flow
 
-**可依赖的 Agent 统一编排标准库**——用同一套抽象覆盖 ReAct、Plan-Execute、Multi-Agent、Router 等模式，附带生产级横切能力。以 **YAML 为编排真源、代码为领域插件** 的双轨标准。
+**编排多个 Agent 的引擎**——拓扑写 YAML，领域能力用插件接入。不替代你的大模型，也不吞掉业务规则。
 
-> 项目依赖 Uni-Flow 引擎；编排优先写 `uniflow.workflow.yaml`（也可用代码 API）；领域智能以 `uses` 插件接入。
+## 一句话痛点
 
-## 从这里开始
+做一个「记账 + 闲聊」助手时：用户说「午饭 32」要记账，说「今天天气怎么样」要闲聊。若塞进一个大 Prompt，或到处手写 `if/else` 调 Agent，很快就会乱、难测、难加规则。
 
-| 路径 | 说明 |
-|------|------|
-| [安装](getting-started/install.md) | Node.js 环境与依赖 |
-| [快速开始](getting-started/quickstart.md) | Sequential / YAML 最小示例 |
-| [设计理念](concepts/philosophy.md) | 为什么用 Uni-Flow |
-| [YAML 编排](orchestration/yaml.md) | 拓扑声明与插件注册 |
-| [跨语言](orchestration/cross-lang.md) | Python / Java + HTTP Unit |
+Uni-Flow 要你做的是：
 
-## 双轨一览
-
-```
-uniflow.workflow.yaml  →  编排真源（拓扑 / policy / 路由）
-         ↓
- @uni-flow engine      →  运行时
-         ↓
-  uses: plugins        →  领域 Unit
+```text
+用户话 → Router（判意图）→ record 记账 Unit | general 闲聊 Unit
 ```
 
-- **能声明的进配置**（顺序、路由、DAG、超时、Token 预算、HITL）
-- **领域智能进插件**（Parse、SQL、RAG、FFmpeg……）
-- **禁止**各项目再发明第二套「手写 for 循环排班」
+顺序、分支、预算写在配置里；真正记账/闲聊的逻辑仍是你的插件。
 
-## 本地预览本站点
+<div class="uf-cta" markdown="0">
+  <a href="understand/what-it-solves/">先懂它：它解决什么</a>
+  <a class="uf-cta--ghost" href="hands-on/mock-minimal/">动手：最小可跑</a>
+</div>
 
-```bash
-pip install -r requirements-docs.txt
-mkdocs serve
-```
+## 接下来读什么
 
-浏览器打开提示的本地地址（默认 `http://127.0.0.1:8000`）。
+| 路径 | 你会得到 |
+|------|----------|
+| [它解决什么](understand/what-it-solves.md) | 记账故事：乱法 vs 清法 |
+| [核心公式](understand/core-formula.md) | Unit / ControlFlow / 管线各一句 |
+| [是不是空壳？](understand/empty-shell.md) | 设计意图 vs 仓库里真能跑什么 |
+| [最小可跑](hands-on/mock-minimal.md) | 无 API Key 的 Mock 示例 |
 
-部署到 GitHub Pages 见 [运维说明](ops/github-pages.md)。
+本地预览本站：`pip install -r requirements-docs.txt && mkdocs serve`

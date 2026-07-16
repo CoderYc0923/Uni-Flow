@@ -1,5 +1,7 @@
 # API 速查
 
+> 参考。新人请先走 [先懂它](../understand/what-it-solves.md) / [动手](../hands-on/mock-minimal.md)。
+
 | 类别 | 符号 |
 |------|------|
 | Engine | `createWorkflowEngine`, `DefaultWorkflowEngine` |
@@ -37,4 +39,4 @@ const client = createUniFlowClient({ baseUrl: 'http://127.0.0.1:8787' });
 const record = await client.startWorkflow('demo', { task: '…' }, { sync: true });
 ```
 
-正式需求见仓库 [`openspec/specs/`](https://github.com/OWNER/Uni-Flow/tree/main/openspec/specs)。
+正式需求见仓库 [`openspec/specs/`](https://github.com/CoderYc0923/Uni-Flow/tree/main/openspec/specs)。

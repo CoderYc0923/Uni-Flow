@@ -1,22 +1,22 @@
 # Uni-Flow
 
-**可依赖的 Agent 统一编排标准库**——用同一套抽象覆盖 ReAct、Plan-Execute、Multi-Agent、Router 等模式；以 **YAML 为编排真源、代码为领域插件** 的双轨标准。
+**编排多个 Agent 的引擎**——拓扑写 YAML，领域能力用插件接入。
 
-> **一句话：** 依赖引擎跑编排；拓扑写 `uniflow.workflow.yaml`；领域能力用 `uses` 插件接入。
+> **一句话痛点：** 「午饭 32」要记账、「天气怎么样」要闲聊——别用一个大 Prompt 或到处手写 `if/else` 排班；用 Router 把意图分流到不同 Unit。
 
 License: MIT
 
 ---
 
-## 文档
+## 文档（先读这里）
 
 | | |
 |--|--|
-| **完整文档站** | 源码 [`docs-site/`](./docs-site/) · 本地 `pip install -r requirements-docs.txt && mkdocs serve` |
-| **部署后 URL** | `https://<OWNER>.github.io/Uni-Flow/`（占位；启用 Pages 后见 [`docs-site/ops/github-pages.md`](./docs-site/ops/github-pages.md)） |
-| **Agent 约定** | [`AGENTS.md`](./AGENTS.md) |
-
-深度教程、架构 Mermaid、YAML/跨语言详解、API 与 FAQ → **文档站**，勿在本 README 双写长文。
+| **人读主路径** | [`docs-site/`](./docs-site/) → [它解决什么](./docs-site/understand/what-it-solves.md) · [是不是空壳？](./docs-site/understand/empty-shell.md) · [动手 Mock](./docs-site/hands-on/mock-minimal.md) |
+| **本地预览** | `pip install -r requirements-docs.txt && mkdocs serve` |
+| **部署 URL** | https://CoderYc0923.github.io/Uni-Flow/ |
+| **AI 硬规矩** | [`AGENTS.md`](./AGENTS.md) |
+| **理论附录** | [`Agent统一工作流模式设计.md`](./Agent统一工作流模式设计.md)（请先看文档站） |
 
 ---
 
@@ -30,13 +30,9 @@ npm run build
 npm test
 ```
 
-可选：`ioredis`（Redis Checkpoint）、`@opentelemetry/api`（OTel）。
-
 ---
 
-## 一分钟上手
-
-最小 Sequential（Mock，无需 LLM Key）：
+## 一分钟上手（Mock）
 
 ```typescript
 import {
@@ -78,47 +74,24 @@ const engine = createWorkflowEngine({
   controlFlow: new SequentialFlow([a, b]),
   sharedState: createSharedState(),
 });
-const result = await engine.run({ task: '写一篇 Uni-Flow 简介' });
-console.log(result.completedUnits); // ['research', 'write']
+console.log((await engine.run({ task: 'hello' })).completedUnits);
 ```
 
-完整文件：[`examples/sequential-pipeline.ts`](./examples/sequential-pipeline.ts)。  
-YAML 路径与 `validate`：见文档站 [快速开始](./docs-site/getting-started/quickstart.md) / [YAML 编排](./docs-site/orchestration/yaml.md)。
+记账意图分流（YAML Mock）：[`examples/accounting-router.yaml`](./examples/accounting-router.yaml)  
+说明：[记账路由怎么接](./docs-site/hands-on/accounting-router.md)
+
+```bash
+npx uniflow validate ./examples/accounting-router.yaml
+```
 
 ---
 
-## 为什么用 / 怎么开始 / 下一步
-
-| | |
-|--|--|
-| **为什么** | 像 MCP 一样「依赖引擎就能跑」；人与 AI 共用 Schema / `uniflow validate` / Cursor 规则 |
-| **怎么开始** | 上方迷你示例 → 或 `examples/yaml-sequential.yaml` |
-| **下一步** | [原理与管线](./docs-site/concepts/pipeline.md) · [跨语言](./docs-site/orchestration/cross-lang.md) · [示例索引](./docs-site/reference/examples.md) |
-
----
-
-## 链接矩阵
+## 链接
 
 | 主题 | 入口 |
 |------|------|
-| 设计理念 / 四层架构 / 执行管线 | [`docs-site/concepts/`](./docs-site/concepts/) |
-| YAML · validate · uses · 跨语言 | [`docs-site/orchestration/`](./docs-site/orchestration/) |
-| API · 契约 · FAQ | [`docs-site/reference/`](./docs-site/reference/) |
+| 先懂它 / 动手 / 深挖 | [`docs-site/`](./docs-site/) |
 | Schema | [`schemas/uniflow.workflow.schema.json`](./schemas/uniflow.workflow.schema.json) |
 | 模板 | [`examples/templates/`](./examples/templates/) |
-| 跨语言 demo | [`examples/cross-lang/`](./examples/cross-lang/) |
+| 跨语言 | [`examples/cross-lang/`](./examples/cross-lang/) |
 | 远程 Unit 契约 | [`docs/remote-unit-http-contract.md`](./docs/remote-unit-http-contract.md) |
-| OpenSpec | [`openspec/specs/`](./openspec/specs/) |
-| SDK 完全体设计 | [`docs/superpowers/specs/2026-07-14-uniflow-sdk-complete-design.md`](./docs/superpowers/specs/2026-07-14-uniflow-sdk-complete-design.md) |
-| 编排理论长文 | [`Agent统一工作流模式设计.md`](./Agent统一工作流模式设计.md) |
-
-路线图见文档站 [OpenSpec 与设计长文索引](./docs-site/reference/openspec-index.md)。
-
----
-
-## 校验 YAML
-
-```bash
-npm run build
-npx uniflow validate ./examples/yaml-sequential.yaml
-```

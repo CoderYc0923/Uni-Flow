@@ -1,14 +1,7 @@
 # 远程 Unit 契约
 
-完整契约文本保留在仓库（站点不镜像全文）：
+> 参考。主路径请先看 [先懂它](../understand/what-it-solves.md)。
 
-**路径：** [`docs/remote-unit-http-contract.md`](https://github.com/OWNER/Uni-Flow/blob/main/docs/remote-unit-http-contract.md)
+完整契约：[`docs/remote-unit-http-contract.md`](https://github.com/CoderYc0923/Uni-Flow/blob/main/docs/remote-unit-http-contract.md)
 
-## 要点摘要
-
-- 远程 Agent / 任意语言实现以 **HTTP Unit** 接入 Orchestrator  
-- 通过 `POST /workflows/from-yaml` 提交 `{ yaml, bindings }`  
-- `bindings` 将 `uses` 名映射到 `{ type: "http", endpoint }`  
-- Orchestrator 注册表为进程内内存：重启后需重新注册  
-
-跨语言跑通步骤见 [跨语言](../orchestration/cross-lang.md) 与 `examples/cross-lang/`。
+要点：HTTP Unit + `POST /workflows/from-yaml` + `bindings`；Registry 进程内内存，重启需重注册。跨语言步骤见 [跨语言](cross-lang.md)。
