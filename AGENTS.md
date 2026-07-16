@@ -2,7 +2,7 @@
 
 Conventions for coding agents working in this repository.
 
-**Human narrative (what / why / empty-shell):** start at `docs-site/understand/` (MkDocs). Do not duplicate long rationale here — keep this file as hard rules only.
+**Human narrative (Who/Why/How, architecture, API handbooks):** VitePress site under `docs-web/` (`npm run docs:dev`). Do not treat retired MkDocs `docs-site/` as live docs. Keep this file as hard rules only.
 
 ## Orchestration (YAML-first)
 
@@ -50,9 +50,9 @@ Complex Composite topologies not in YAML v1 → use code API (`createWorkflowEng
 | CLI | `dist/cli/uniflow.js` |
 | Templates | `examples/templates/` |
 | Cursor rule | `.cursor/rules/uni-flow.mdc` |
-| Docs site (人读主路径) | `docs-site/understand/` · `docs-site/hands-on/` + root `mkdocs.yml`（`mkdocs serve`） |
-| Docs deploy | `.github/workflows/docs.yml` → GitHub Pages（`site/` 勿提交） |
-| Design appendix | `Agent统一工作流模式设计.md`（理论推导；入门先看 docs-site） |
+| Docs site (VitePress) | `docs-web/` — Why: `docs-web/why/` · Architecture: `docs-web/architecture/` · API: `docs-web/reference/`（`npm run docs:dev` / `docs:build`） |
+| Docs deploy | `.github/workflows/docs.yml` → GitHub Pages |
+| Design appendix | `docs-web/architecture/design-longform.md` |
 
 ## Dual-track
 

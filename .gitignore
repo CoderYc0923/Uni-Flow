@@ -1,5 +1,10 @@
 node_modules/
 dist/
 site/
+docs-web/.vitepress/dist/
+docs-web/.vitepress/cache/
+docs-web/reference/generated/**
+!docs-web/reference/generated/.gitkeep
+!docs-web/reference/generated/index.md
 *.log
 .DS_Store

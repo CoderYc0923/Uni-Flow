@@ -5,9 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'docs-site/**'
-      - 'mkdocs.yml'
-      - 'requirements-docs.txt'
+      - 'docs-web/**'
+      - 'src/**'
+      - 'typedoc.json'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
@@ -27,21 +29,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.12'
+          node-version: '20'
+          cache: npm
 
-      - name: Install docs dependencies
-        run: pip install -r requirements-docs.txt
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Build MkDocs site
-        run: mkdocs build --strict
+      - name: Build library (for TypeDoc types)
+        run: npm run build
+
+      - name: Build VitePress site
+        run: npm run docs:build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: docs-web/.vitepress/dist
 
   deploy:
     needs: build
