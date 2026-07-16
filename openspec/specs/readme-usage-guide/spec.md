@@ -2,27 +2,27 @@
 
 ## Purpose
 
-Root README usage guide structure: full-pipeline diagrams, install/quick start, core concepts, end-to-end cases, and public API alignment.
+Root README portal: install/quick start, minimal examples, and links to the VitePress site for full tutorials, architecture, and API handbooks.
 
 ## Requirements
 
 ### Requirement: Root README exists with usage guide structure
-The repository SHALL provide a root `README.md` written primarily in Simplified Chinese that includes: project overview, full-pipeline flow diagrams, install steps, quick start, core concepts, at least three end-to-end examples, API quick reference, multi-language Sidecar pointers, and links to design docs / openspec specs.
+The repository SHALL provide a root `README.md` written primarily in Simplified Chinese that acts as a **portal**: project one-liner and product Who/Why hook, install steps, a minimal runnable quick-start snippet, links to the **VitePress** documentation site for Why / architecture / full tutorials / API handbooks, pointers to examples and key repo paths, and license. Exhaustive tutorials, large Mermaid galleries, and full API guides MUST live primarily on the VitePress site (not duplicated in full inside README).
 
 #### Scenario: Newcomer can find quick start
 - **WHEN** a reader opens `README.md`
-- **THEN** they can locate install commands and a minimal runnable Sequential workflow example within the first screenfuls of content
+- **THEN** they can locate install commands and a minimal runnable example, and a clear link to the VitePress documentation site for deeper guides
 
-### Requirement: Full-pipeline flow diagrams
-The README SHALL include a dedicated section that explains what Uni-Flow does and how a request flows end-to-end, using Mermaid (or equivalent) diagrams covering: (1) system panorama from caller/SDK/REST/MCP through ControlFlow, WorkflowUnit/RuntimeAdapter, MessageBus/SharedState, and Layer 4 services to final result/checkpoint/HITL; (2) the single-unit execution pipeline in the same order as the engine implementation (Policy → Security → Context → Execute → post-hooks → Record → Checkpoint → Observability → MessageBus). Each diagram MUST be followed by short stage annotations in Simplified Chinese.
+#### Scenario: Full pipeline lives in docs site
+- **WHEN** a reader needs architecture diagrams and API handbooks
+- **THEN** README directs them to the VitePress site rather than embedding the full former long README or MkDocs-only paths as the sole source
 
-#### Scenario: Reader sees both panorama and unit pipeline
-- **WHEN** a reader opens the full-pipeline section of `README.md`
-- **THEN** they can identify the system panorama diagram and the unit execution pipeline diagram without opening other docs
+### Requirement: README CTA targets VitePress Why and API
+The README portal SHALL explicitly link to VitePress pages for product Why and API Reference (or the deployed Pages URL equivalent).
 
-#### Scenario: Unit pipeline order matches engine
-- **WHEN** a reader compares the unit pipeline diagram to the implemented execution order
-- **THEN** the documented stages appear in the same sequence as PolicyEngine.preCheck → SecurityGovernance.preHook → ContextManager.assemble → RuntimeAdapter.execute → post-hooks → record → checkpoint → observability → MessageBus.publish
+#### Scenario: Why and API links present
+- **WHEN** a reader scans README documentation links
+- **THEN** at least one link targets Why/3W content and at least one targets API reference on the VitePress site
 
 ### Requirement: Examples match public TypeScript API
 Code snippets in `README.md` and referenced example files MUST import only symbols exported from the package public entry (`src/index.ts` / published package root) and MUST compile against the current type definitions.
