@@ -1,6 +1,9 @@
-# 跨语言
+# 跨语言（手段说明）
 
-Uni-Flow 的执行核（Orchestrator）为 Node HTTP 服务；任意语言实现的 Agent 只要遵守 **Remote Unit HTTP Contract**，即可通过 `bindings` 接入同一 YAML 拓扑。
+> **主路径请先读：[跨项目复用](/guide/cross-project)。**  
+> 本页说明：当项目边界用 HTTP Unit 实现时，各语言如何用 SDK 调 Orchestrator——跨语言是手段，不是「同一工作流里混用多种子 Agent」的目标。
+
+Uni-Flow 的执行核（Orchestrator）为 Node HTTP 服务；任意语言实现的能力只要遵守 **Remote Unit HTTP Contract**，即可通过 `bindings` 接入同一 YAML 拓扑。
 
 ## 架构概览
 
@@ -22,7 +25,8 @@ flowchart LR
 
 ## 三步跑通
 
-详细步骤与命令见仓库 [`examples/cross-lang/README.md`](https://github.com/CoderYc0923/Uni-Flow/blob/main/examples/cross-lang/README.md)。
+详细步骤与命令见仓库 [`examples/cross-lang/README.md`](https://github.com/CoderYc0923/Uni-Flow/blob/main/examples/cross-lang/README.md)。  
+跨项目「对内 workflow、对外 Unit」见 [`examples/workflow-as-unit/`](https://github.com/CoderYc0923/Uni-Flow/tree/main/examples/workflow-as-unit)。
 
 ### 1. 启动 Orchestrator
 

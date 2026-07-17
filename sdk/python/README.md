@@ -22,6 +22,8 @@ client.load_and_register(
     bindings={"demo.greeter": {"type": "http", "endpoint": "http://127.0.0.1:9101/execute"}},
 )
 run = client.start_workflow("cross-lang-greeter", {"task": "hi"}, sync=True)
+# Optional business knobs (pass-through to Units / remote HTTP input.params):
+# run = client.start_workflow("...", {"task": "hi", "params": {"$profile": "rag.v1", "topK": 5}}, sync=True)
 # run["runId"], run["status"], run["result"]["state"]
 ```
 

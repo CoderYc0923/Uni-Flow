@@ -1,6 +1,6 @@
 # 与成熟框架对比
 
-选型时常见疑问：「已有 LangGraph / LangChain，还要 Uni-Flow 吗？」本文用**共性、差异、互补**三段式回答，并给出可操作的组合方式。
+选型时常见疑问：「已有 LangGraph / LangChain / Mastra，还要 Uni-Flow 吗？」本文用**共性、差异、互补**回答，并给出可操作的组合方式。
 
 ## 共性：都是「节点 + 边」
 
@@ -8,23 +8,24 @@
 |------|----------|----------|
 | **LangGraph** | 有向图上的节点与边 | 状态图、条件边、子图、checkpoint |
 | **LangChain** | Chain / Runnable 组合 | LCEL、工具绑定、检索链 |
+| **Mastra** | TS 应用内 Agent + Workflow | `.then` / `.branch` / `.parallel`、Memory、Evals、Studio |
 | **手写 for 循环** | 代码即调度器 | 灵活，但语义不统一 |
-| **Uni-Flow** | ControlFlow + WorkflowUnit | YAML 拓扑、七种流、统一 Layer4 管线 |
+| **Uni-Flow** | ControlFlow + WorkflowUnit | YAML 拓扑、七种流、统一 Layer4 管线、跨项目 Unit 契约 |
 
 它们都在解决：**多个步骤按某种顺序或条件执行，并在步骤之间传递状态。**
 
 ## 差异：Uni-Flow 多出来的那一层
 
-| 维度 | LangGraph / 手写循环 | Uni-Flow |
-|------|----------------------|----------|
+| 维度 | LangGraph / Mastra / 手写循环 | Uni-Flow |
+|------|------------------------------|----------|
 | **拓扑声明** | 多在代码里构图 | Workflow YAML + JSON Schema 校验 |
-| **宏观流类型** | 自行建模 | Sequential / Parallel / Router / DAG / Loop / Delegation / Composite |
-| **运行时绑定** | 通常与 Python/TS 图代码一体 | Unit 通过 RuntimeAdapter 解耦；可 HTTP 远程 |
-| **横切管线** | 需自行拼装 | Policy / Security / Context / Checkpoint / Obs 内置顺序 |
-| **跨语言** | 以单语言运行时为主 | Orchestrator + 远程 Unit 契约 |
+| **宏观流类型** | 自行建模或框架 DSL | Sequential / Parallel / Router / DAG / Loop / Delegation / Composite |
+| **运行时绑定** | 通常与单语言应用一体 | Unit 通过 RuntimeAdapter 解耦；可 HTTP 远程 |
+| **横切管线** | 需自行拼装或框架内置产品化 | Policy / Security / Context / Checkpoint / Obs 内置顺序 |
+| **跨项目复用** | 同仓模块或自建服务协议 | Workflow-as-Unit：对内完整 workflow，对外标准 I/O |
 | **人与 AI 协作** | 改代码为主 | 改 YAML + `uniflow validate` 可机器校验 |
 
-Uni-Flow **不是**在模型调用、工具定义、向量检索上替代 LangChain；**也不是**在图算法表达力上完全取代 LangGraph。
+Uni-Flow **不是**在模型调用、工具定义、向量检索上替代 LangChain/Mastra；**也不是**在图算法表达力上完全取代 LangGraph。
 
 ## 手写 for 循环：为什么不够
 
@@ -68,10 +69,29 @@ flowchart TB
 | 场景 | 建议 |
 |------|------|
 | 单语言、单图、团队已深度投入 LangGraph | 继续用 LangGraph；需要 YAML 契约与横切管线时再引入 Uni-Flow 包一层 |
-| 多团队、多语言、拓扑要进仓库可 diff | Uni-Flow YAML 为真源；LangGraph 跑在某一 Unit 里 |
+| 多团队、跨项目、拓扑要进仓库可 diff | Uni-Flow YAML 为真源；LangGraph 跑在某一 Unit 里 |
 | 只要链式 LLM 调用 | LangChain/LCEL 可能更轻；不必强行上 ControlFlow |
 
 **Unit Wrapper 模式：** 实现一个 `RuntimeAdapter`，在 `execute()` 内调用 LangGraph 的 `invoke` / `stream`，把 `AgentInput` 映射为图状态，把图输出映射为 `AgentOutput`。外层 Router、预算、HITL 仍由 Uni-Flow 引擎管线负责。
+
+## Mastra：应用内造 Agent vs 跨项目编排契约
+
+[Mastra](https://mastra.ai/) 是面向 **TypeScript** 的一体式 AI 应用框架：Agent、Workflow、Memory、Observability、Studio、部署等，帮你在一个 TS 项目里把智能体应用做完。
+
+| 维度 | Mastra | Uni-Flow |
+|------|--------|----------|
+| 主战场 | 单语言（TS）应用内构建 | **跨项目**复用同一编排规范 |
+| 编排形态 | 代码优先的 Workflow API | YAML + ControlFlow + validate |
+| 运行时 | 自带 Agent / 模型路由 / 工具 | Unit 边界；箱内可挂任意运行时 |
+| 典型用法 | `npm create mastra` 起应用 | 各项目 SDK + YAML；远程 Unit 组合 |
+
+**结论：Uni-Flow 不替代 Mastra。** Mastra Agent / Workflow 可以装进一个 Uni-Flow Unit；Uni-Flow 负责「客服项目如何把 RAG 项目当标准节点接入」这类**编排与复用边界**。
+
+| 场景 | 建议 |
+|------|------|
+| 纯 TS 应用、要 Studio/Evals、快速造 Agent | Mastra（或同类）为主 |
+| 多仓库、多语言团队、要同一份 YAML 拓扑 | Uni-Flow 为编排真源 |
+| 已有 Mastra 服务，要被别的项目调用 | 用 Workflow-as-Unit 暴露 `/execute`，父级 bindings 接入 |
 
 ## LangChain：不同层次的问题
 
@@ -87,10 +107,11 @@ LangChain 擅长**单次调用链**（模型 + 工具 + 检索）。Uni-Flow 擅
 | 你的主要矛盾 | 优先考虑 |
 |--------------|----------|
 | 图编排、子图、条件边已在 LangGraph 里很成熟 | LangGraph 为主；Uni-Flow 作外层标准壳 |
+| TS 应用内 Agent + Workflow + Studio | Mastra；需要跨项目契约时再套 Uni-Flow |
 | 拓扑要给人和 AI 共用、要 validate | Uni-Flow YAML |
 | 只有 2～3 步固定顺序 | Sequential YAML 或简单 Chain 均可 |
-| 跨语言 Unit、统一 HTTP 运维 | Uni-Flow Orchestrator |
+| 跨项目 Unit、统一 HTTP 运维 | Uni-Flow Orchestrator + Workflow-as-Unit |
 
 ## 若你只记住一件事
 
-**Uni-Flow 管宏观编排与统一管线；LangGraph 等框架可以装进 Unit。** 二者是套娃关系，不是零和替代。
+**Uni-Flow 管宏观编排、统一管线与跨项目 Unit 契约；LangGraph / Mastra 等可以装进 Unit。** 是套娃关系，不是零和替代。

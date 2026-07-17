@@ -1,20 +1,26 @@
-{
-  "request": {
-    "input": {
-      "task": "golden",
-      "context": "ctx"
-    }
-  },
-  "response": {
-    "content": "hello golden",
-    "toolCalls": [],
-    "stopReason": "stop",
-    "metadata": {},
-    "tokenUsage": {
-      "promptTokens": 1,
-      "completionTokens": 2,
-      "totalTokens": 3,
-      "estimatedCost": 0
-    }
-  }
-}
+{
+  "request": {
+    "input": {
+      "task": "golden",
+      "context": "ctx",
+      "params": {
+        "$profile": "demo.v1",
+        "mode": "fast"
+      }
+    }
+  },
+  "response": {
+    "content": "hello golden",
+    "toolCalls": [],
+    "stopReason": "stop",
+    "metadata": {
+      "echoMode": "fast"
+    },
+    "tokenUsage": {
+      "promptTokens": 1,
+      "completionTokens": 2,
+      "totalTokens": 3,
+      "estimatedCost": 0
+    }
+  }
+}

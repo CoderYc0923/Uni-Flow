@@ -29,6 +29,7 @@ describe('HttpAdapter golden fixture', () => {
       fetchFn: async (_url, init) => {
         const body = JSON.parse(String(init?.body)) as { input: AgentInput };
         expect(body.input.task).toBe(golden.request.input.task);
+        expect(body.input.params).toEqual(golden.request.input.params);
         return new Response(JSON.stringify(golden.response), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -51,5 +52,6 @@ describe('HttpAdapter golden fixture', () => {
     expect(out.stopReason).toBe('stop');
     expect(out.toolCalls).toEqual([]);
     expect(out.tokenUsage?.totalTokens).toBe(3);
+    expect(out.metadata.echoMode).toBe('fast');
   });
 });

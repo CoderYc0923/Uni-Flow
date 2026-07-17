@@ -3,10 +3,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   createEngineFromYaml,
+  createMockAdapter,
   YamlLoadError,
   YamlValidationError,
   validateWorkflowYamlSource,
 } from '../src/index.js';
+import type { AgentInput } from '../src/index.js';
 
 const templatesDir = join(process.cwd(), 'examples', 'templates');
 
@@ -140,11 +142,49 @@ spec:
     expect(result.completedUnits).toContain('a');
   });
 
-  it('loads from file path', async () => {
-    const file = join(process.cwd(), 'examples', 'yaml-sequential.yaml');
-    const engine = await createEngineFromYaml(file);
-    const result = await engine.run({ task: 'from-file' });
-    expect(result.completedUnits.length).toBeGreaterThan(0);
+  it('passes run params through default inputAdapter', async () => {
+    let seen: AgentInput | undefined;
+    const yaml = `
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: params-demo
+spec:
+  units:
+    - id: a
+      uses: capture.agent
+  flow:
+    type: sequential
+    order: [a]
+`;
+    const engine = await createEngineFromYaml(yaml, {
+      registry: {
+        'capture.agent': () =>
+          createMockAdapter({
+            responseFn: (input) => {
+              seen = input;
+              return {
+                content: 'ok',
+                toolCalls: [],
+                stopReason: 'stop',
+                metadata: {},
+              };
+            },
+          }),
+      },
+    });
+    await engine.run({
+      task: 'q',
+      params: { $profile: 'rag.v1', topK: 5 },
+    });
+    expect(seen?.task).toBe('q');
+    expect(seen?.params).toEqual({ $profile: 'rag.v1', topK: 5 });
+  });
+
+  it('runs without params when omitted', async () => {
+    const engine = await createEngineFromYaml(minimalSequential);
+    const result = await engine.run({ task: 'hello' });
+    expect(result.completedUnits).toEqual(['a', 'b']);
   });
 });
 

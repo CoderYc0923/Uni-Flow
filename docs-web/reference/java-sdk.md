@@ -54,7 +54,7 @@ public String startWorkflow(String workflowId, String inputJson, boolean sync) t
 | 参数 | 类型 | 说明 |
 |------|------|------|
 | `workflowId` | `String` | 工作流 ID |
-| `inputJson` | `String` | input 对象 JSON，如 `{"task":"hello"}`；可 `null` → `{}` |
+| `inputJson` | `String` | input 对象 JSON，如 `{"task":"hello"}` 或含可选 `params`；可 `null` → `{}` |
 | `sync` | `boolean` | 是否同步等待 |
 
 → `POST /workflows/{id}/runs`

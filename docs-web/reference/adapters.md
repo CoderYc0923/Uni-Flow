@@ -60,6 +60,7 @@ function createHttpAdapter(config: HttpAdapterConfig): HttpAdapter
 | `fetchFn` | `typeof fetch` | 否 | 自定义 fetch |
 
 请求体：`{ input, context }`（`context` 为 `ExecutionContext`）。  
+`input` 含 `task`、可选 `context` / `delegatedBy` / **`params`**（业务策略信封，透传；勿放密钥）。  
 响应：`AgentOutput` JSON。
 
 契约：[Remote Unit HTTP Contract](https://github.com/CoderYc0923/Uni-Flow/blob/main/docs/remote-unit-http-contract.md)

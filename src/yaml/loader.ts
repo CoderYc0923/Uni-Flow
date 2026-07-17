@@ -81,10 +81,21 @@ function wrapAdapter(id: string, runtime: RuntimeAdapter, yamlUnit: YamlUnit): W
     id,
     runtime,
     terminationPolicy: { type: 'stop-reason', reasons: ['stop'] },
-    inputAdapter: (state) => ({
-      task: (state.get<string>('task') as string) ?? '',
-      context: state.get<string>('context'),
-    }),
+    inputAdapter: (state) => {
+      const nested = state.get<Record<string, unknown>>('input.params');
+      const top = state.get<Record<string, unknown>>('params');
+      const params =
+        nested && typeof nested === 'object' && !Array.isArray(nested)
+          ? nested
+          : top && typeof top === 'object' && !Array.isArray(top)
+            ? top
+            : undefined;
+      return {
+        task: (state.get<string>('task') as string) ?? '',
+        context: state.get<string>('context'),
+        ...(params ? { params } : {}),
+      };
+    },
     outputAdapter: (output, state) => {
       state.set(`output.${id}`, output.content);
       const route = output.metadata?.route;

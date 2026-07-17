@@ -21,6 +21,8 @@ export interface ToolCall {
 export interface AgentInput {
   task: string;
   context?: string;
+  /** Business strategy envelope; Engine passes through without domain interpretation. */
+  params?: Record<string, unknown>;
   delegatedBy?: UnitId;
 }
 

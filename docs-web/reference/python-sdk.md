@@ -66,7 +66,8 @@ def start_workflow(
 ) -> dict
 ```
 
-→ `POST /workflows/{id}/runs`
+→ `POST /workflows/{id}/runs`  
+`input_data` 可含 `task` 与可选 `params`（透传给 Unit / Remote Unit，勿放密钥）。
 
 ### get_run
 

@@ -15,27 +15,33 @@ Conventions for coding agents working in this repository.
 
 ```text
 Need Uni-Flow orchestration?
-├─ TS in-process → createEngineFromYaml + registry[uses] = Adapter/factory
-├─ Any language / remote Unit → HTTP Unit (see docs/remote-unit-http-contract.md)
-│     + POST /workflows/from-yaml { yaml, bindings: { "name": { type:http, endpoint } } }
-└─ Only want Checkpoint/Memory beside existing graph → Sidecar SDK (does NOT replace YAML topology)
+├─ Single project, TS in-process → createEngineFromYaml + registry[uses]
+├─ Cross-project / deploy boundary → HTTP Unit `/execute` (Workflow-as-Unit)
+│     + POST /workflows/from-yaml { yaml, bindings }
+│     → docs-web/guide/cross-project.md · examples/workflow-as-unit/
+└─ Only Checkpoint/Memory beside existing graph → Sidecar SDK (does NOT replace YAML)
 ```
+
+Multi-language SDKs are how each project speaks Uni-Flow; HTTP is the **project boundary**, not “mix languages inside one workflow for fun”.
 
 Complex Composite topologies not in YAML v1 → use code API (`createWorkflowEngine`) for that subgraph; keep top-level YAML when possible.
 
-## Cross-language
+## Cross-project & multi-language
 
 | Item | Path |
 |------|------|
-| Design | `docs/superpowers/specs/2026-07-14-uniflow-sdk-complete-design.md` |
-| Demos | `examples/cross-lang/` (README: 起核 → 起 Unit → 跑 SDK) |
-| Remote Unit contract | `docs/remote-unit-http-contract.md` |
+| Design | `docs/superpowers/specs/2026-07-17-cross-project-unit-composability-design.md` |
+| Cross-project demo | `examples/workflow-as-unit/` |
+| Multi-lang SDK demos | `examples/cross-lang/` |
+| Remote Unit contract | `docs/remote-unit-http-contract.md`（includes optional `input.params`） |
 | Python SDK | `sdk/python` — `validate` / `load_and_register` / `start_workflow` |
 | Java SDK | `sdk/java` — same surface (structural validate + HTTP) |
 
 **Registry memory:** Orchestrator registrations are in-process; restart ⇒ re-`from-yaml`. YAML files on disk are not deleted.
 
 **Run result fields to surface to users:** `runId`, `status`, `result.completedUnits`, `result.state` (e.g. `output.<unitId>`).
+
+**Business knobs across Units:** prefer `AgentInput.params` (optional); do not put secrets in `params`.
 
 ## P3 `artifacts` (reserved)
 

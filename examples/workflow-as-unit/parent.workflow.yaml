@@ -1,0 +1,12 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: parent-embeds-child
+  description: Parent workflow that embeds a child project as one Unit
+spec:
+  units:
+    - id: child
+      uses: child.capability
+  flow:
+    type: sequential
+    order: [child]

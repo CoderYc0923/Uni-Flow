@@ -1,0 +1,18 @@
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: child-capability-internal
+  description: Internal workflow behind a Workflow-as-Unit /execute wrapper
+spec:
+  units:
+    - id: retrieve
+      uses: builtin.mock
+      config:
+        response: "retrieved"
+    - id: answer
+      uses: builtin.mock
+      config:
+        response: "answered"
+  flow:
+    type: sequential
+    order: [retrieve, answer]
