@@ -10,6 +10,11 @@ function scopedKey(scope: StateScope, key: string): string {
   return `${scope}::${key}`;
 }
 
+/**
+ * 进程内 SharedState 实现：带 scope 前缀的键值存储、快照与简单事务。
+ *
+ * 一般通过 {@link createSharedState} 获取，无需直接 `new`。
+ */
 export class InMemorySharedState implements SharedState {
   private entries = new Map<string, StateEntry>();
   private globalVersion = 0;
@@ -112,13 +117,26 @@ export class InMemorySharedState implements SharedState {
   }
 }
 
+/**
+ * SharedState 事务中检测到并发写冲突时抛出。
+ */
 export class StateConflictError extends Error {
+  /**
+   * @param message - 冲突说明（通常含冲突键）
+   */
   constructor(message: string) {
     super(message);
     this.name = 'StateConflictError';
   }
 }
 
+/**
+ * 创建默认的进程内 {@link SharedState}（{@link InMemorySharedState}）。
+ *
+ * 供 `createWorkflowEngine` / `createEngineFromYaml` 等在未显式传入 `sharedState` 时使用。
+ *
+ * @returns 新的空 SharedState 实例
+ */
 export function createSharedState(): SharedState {
   return new InMemorySharedState();
 }

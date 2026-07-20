@@ -1,6 +1,6 @@
 /**
- * Minimal Redis-compatible client surface used by RedisCheckpointStore.
- * Works with ioredis / node-redis via adapter, or InMemoryRedisClient for tests.
+ * RedisCheckpointStore 使用的最小 Redis 兼容客户端面。
+ * 可用 ioredis / node-redis 适配，或测试用 {@link InMemoryRedisClient}。
  */
 export interface RedisLikeClient {
   get(key: string): Promise<string | null>;
@@ -11,6 +11,7 @@ export interface RedisLikeClient {
   llen(key: string): Promise<number>;
 }
 
+/** 进程内 Redis 替身（kv + list），供本地/单测。 */
 export class InMemoryRedisClient implements RedisLikeClient {
   private kv = new Map<string, string>();
   private lists = new Map<string, string[]>();
@@ -48,8 +49,10 @@ export class InMemoryRedisClient implements RedisLikeClient {
 }
 
 /**
- * Dynamically connect to Redis via REDIS_URL using ioredis if available.
- * Falls back to InMemoryRedisClient when unavailable.
+ * 按 `REDIS_URL`（或入参 url）动态连接 Redis（可选依赖 ioredis）；不可用则回退内存客户端。
+ *
+ * @param url - Redis URL；省略时读环境变量，再无则内存
+ * @returns `{ client, kind: 'redis' | 'memory' }`
  */
 export async function createRedisClient(
   url?: string,

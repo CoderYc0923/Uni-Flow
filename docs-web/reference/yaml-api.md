@@ -42,9 +42,11 @@ function validateWorkflowYamlSource(source: string): WorkflowYamlDocument
 |------|------|------|
 | `source` | `string` | YAML 文本（非文件路径） |
 
- against `schemas/uniflow.workflow.schema.json`。失败抛出 **`YamlValidationError`**。
+对照 Schema：`schemas/uniflow.workflow.schema.json`。失败抛出 **`YamlValidationError`**。
 
 CLI `uniflow validate` 内部使用此函数（先读文件再校验）。
+
+> 符号级中文注解见 [生成附录说明](/reference/typedoc-appendix) → [附录正文](/reference/generated/)（查找 `createEngineFromYaml` / `validateWorkflowYamlSource` / `runWorkflowAsUnit`）。
 
 ## 相关函数
 
@@ -95,3 +97,4 @@ await engine.run({ task: 'test' });
 - [YAML 指南](/guide/yaml)
 - [uses 与插件](/guide/uses)
 - [Engine](/reference/engine)
+- [生成附录说明](/reference/typedoc-appendix) · [附录正文](/reference/generated/)

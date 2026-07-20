@@ -103,7 +103,8 @@ export default withMermaid(
               { text: 'ControlFlow', link: '/reference/controlflow' },
               { text: 'Adapters', link: '/reference/adapters' },
               { text: 'Layer4', link: '/reference/layer4' },
-              { text: '生成附录 (TypeDoc)', link: '/reference/generated/' },
+              { text: '生成附录说明', link: '/reference/typedoc-appendix' },
+              { text: '生成附录（中文注解）', link: '/reference/generated/' },
             ],
           },
           {

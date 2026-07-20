@@ -2,10 +2,17 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AgentInput, AgentOutput, WorkflowResult } from '../core/types.js';
 import { createEngineFromYaml, type CreateEngineFromYamlOptions } from './loader.js';
 
+/**
+ * {@link runWorkflowAsUnit} 的选项：继承 YAML 引擎选项，并控制如何把 `WorkflowResult` 映射为 `AgentOutput`。
+ */
 export interface RunWorkflowAsUnitOptions extends CreateEngineFromYamlOptions {
-  /** SharedState key for primary content (default: first `output.*` found, else `"done"`). */
+  /**
+   * 作为 `AgentOutput.content` 的 SharedState 键（默认：第一个 `output.*`，否则 `"done"`）。
+   */
   contentStateKey?: string;
-  /** Override full AgentOutput mapping. */
+  /**
+   * 自定义完整 `AgentOutput` 映射；提供时忽略默认映射逻辑。
+   */
   mapResult?: (result: WorkflowResult, input: AgentInput) => AgentOutput;
 }
 
@@ -41,8 +48,29 @@ function defaultMapResult(
 }
 
 /**
- * Run a Workflow YAML as a single Unit execution: AgentInput → engine.run → AgentOutput.
- * Used by Workflow-as-Unit child services (TS↔TS composition).
+ * 把整份 Workflow YAML 当作**单个 Unit** 执行：`AgentInput` → `engine.run` → `AgentOutput`。
+ *
+ * 用于跨项目 TS↔TS 组合（子服务对外只暴露 Unit 契约）。业务旋钮放在 `input.params`（勿放 secrets）。
+ *
+ * @param source - Workflow YAML 路径或文本（同 {@link createEngineFromYaml}）
+ * @param input - 标准 Unit 输入（`task` / 可选 `context` / `params`）
+ * @param options - registry、bindings、内容键或自定义 `mapResult`
+ * @returns 符合 Remote Unit 契约的 {@link AgentOutput}
+ *
+ * @example
+ * ```ts
+ * import { runWorkflowAsUnit, createMockAdapter } from 'uni-flow';
+ *
+ * const out = await runWorkflowAsUnit(
+ *   yamlText,
+ *   { task: 'summarize', params: { mode: 'brief' } },
+ *   {
+ *     registry: { 'demo.echo': () => createMockAdapter() },
+ *     contentStateKey: 'output.echo',
+ *   },
+ * );
+ * console.log(out.content, out.metadata);
+ * ```
  */
 export async function runWorkflowAsUnit(
   source: string,
@@ -60,13 +88,36 @@ export async function runWorkflowAsUnit(
   return defaultMapResult(result, input, contentStateKey);
 }
 
+/**
+ * {@link createWorkflowAsUnitHttpHandler} 的选项。
+ */
 export interface WorkflowAsUnitHttpHandlerOptions extends RunWorkflowAsUnitOptions {
-  /** Path suffix that must match (default: ends with `/execute`). */
+  /**
+   * URL 路径须以此后缀结尾才处理（默认 `/execute`）。
+   */
   pathEndsWith?: string;
 }
 
 /**
- * Node.js HTTP request listener for `POST .../execute` with Remote Unit JSON body `{ input }`.
+ * 创建 Node.js HTTP 监听器：处理 `POST .../execute`，请求体为 Remote Unit JSON `{ input }`。
+ *
+ * 成功返回 200 + {@link AgentOutput}；失败返回 500，且 `stopReason: 'error'`。
+ * 非 POST 或不匹配路径时返回 404。
+ *
+ * @param source - 子工作流 YAML 路径或文本
+ * @param options - 同 {@link runWorkflowAsUnit}，外加 `pathEndsWith`
+ * @returns `(req, res) => void`，可直接交给 `http.createServer`
+ *
+ * @example
+ * ```ts
+ * import { createServer } from 'node:http';
+ * import { createWorkflowAsUnitHttpHandler } from 'uni-flow';
+ *
+ * const handler = createWorkflowAsUnitHttpHandler('./child.workflow.yaml', {
+ *   registry: myRegistry,
+ * });
+ * createServer(handler).listen(3100);
+ * ```
  */
 export function createWorkflowAsUnitHttpHandler(
   source: string,

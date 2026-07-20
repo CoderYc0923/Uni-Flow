@@ -7,13 +7,23 @@ const PII_PATTERNS = [
   /\b\d{15,18}\b/g, // id numbers
 ];
 
+/**
+ * 基础安全治理配置：工具白名单、Unit 授权、HITL 工具与默认 caller。
+ */
 export interface SecurityConfig {
+  /** 允许的工具名列表；未设则不按工具白名单拦截。 */
   allowedTools?: string[];
+  /** caller id → 允许的 Unit id 列表。 */
   allowedUnits?: Record<string, string[]>;
+  /** 触发 HITL 的工具名。 */
   hitlTools?: string[];
+  /** 默认调用方身份。 */
   caller?: CallerIdentity;
 }
 
+/**
+ * 基础安全治理：pre/post hook、简易 PII 脱敏与审计日志。
+ */
 export class BasicSecurityGovernance implements SecurityGovernance {
   private audit: { timestamp: number; event: string; details: Record<string, unknown> }[] = [];
 
@@ -92,6 +102,12 @@ export class BasicSecurityGovernance implements SecurityGovernance {
   }
 }
 
+/**
+ * 创建 {@link BasicSecurityGovernance}。
+ *
+ * @param config - 可选安全配置
+ * @returns 安全治理实例
+ */
 export function createSecurityGovernance(config?: SecurityConfig): BasicSecurityGovernance {
   return new BasicSecurityGovernance(config);
 }

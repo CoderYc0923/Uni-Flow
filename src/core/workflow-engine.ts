@@ -30,18 +30,33 @@ import type {
   SecurityGovernance,
 } from '../layer4/types.js';
 
+/**
+ * {@link createWorkflowEngine} 的可选依赖与策略配置。
+ * 未提供的 Layer4 组件会使用内存/默认实现。
+ */
 export interface WorkflowEngineOptions {
+  /** 上下文组装与记录；默认 `createContextManager()`。 */
   contextManager?: ContextManager;
+  /** 检查点存储；默认内存实现，用于 `resume`。 */
   checkpointStore?: CheckpointStore;
+  /** 可观测性（span / 日志 / 成本）；默认空实现。 */
   observability?: Observability;
+  /** 策略引擎；若未传则按 `policyConfig` 创建。 */
   policyEngine?: PolicyEngine;
+  /** 安全治理（pre/post hook、HITL）；默认按 `caller` 放行。 */
   security?: SecurityGovernance;
+  /** 传给默认策略引擎的局部 `PolicyConfig`（重试、超时、预算等）。 */
   policyConfig?: Partial<PolicyConfig>;
+  /** 调用方身份（id + roles），供安全钩子使用；默认 `system` / `admin`。 */
   caller?: { id: string; roles: string[] };
 }
 
 let runCounter = 0;
 
+/**
+ * 默认工作流引擎实现：按 ControlFlow 调度 Unit，串联 Layer4（策略、上下文、检查点、安全、可观测性）。
+ * 一般通过 {@link createWorkflowEngine} 或 {@link createEngineFromYaml} 获取，无需直接 `new`。
+ */
 export class DefaultWorkflowEngine implements WorkflowEngine {
   private config: WorkflowConfig;
   private messageBus: MessageBus;
@@ -60,6 +75,10 @@ export class DefaultWorkflowEngine implements WorkflowEngine {
   private totalCost = 0;
   private caller: { id: string; roles: string[] };
 
+  /**
+   * @param config - 工作流配置（units、controlFlow、可选 sharedState / messageBus）
+   * @param options - Layer4 依赖与策略覆盖
+   */
   constructor(config: WorkflowConfig, options: WorkflowEngineOptions = {}) {
     this.config = config;
     this.workflowId = config.workflowId;
@@ -76,6 +95,12 @@ export class DefaultWorkflowEngine implements WorkflowEngine {
     this.caller = options.caller ?? { id: 'system', roles: ['admin'] };
   }
 
+  /**
+   * 启动一次新运行：将 `input` 写入 SharedState 后进入调度循环。
+   *
+   * @param input - 初始状态键值（常见：`task`、`context`、`params`）
+   * @returns 运行结果（`runId`、`completedUnits`、`state` 快照等）
+   */
   async run(input?: Record<string, unknown>): Promise<WorkflowResult> {
     if (input) {
       for (const [k, v] of Object.entries(input)) {
@@ -85,6 +110,14 @@ export class DefaultWorkflowEngine implements WorkflowEngine {
     return this.executeLoop();
   }
 
+  /**
+   * 从检查点恢复指定 `runId` 的运行（可选指定 `snapshotId`）。
+   *
+   * @param runId - 先前运行的 ID
+   * @param snapshotId - 可选快照 ID；省略则由存储选择最新/默认
+   * @returns 恢复后继续执行得到的结果
+   * @throws 找不到检查点时抛出错误
+   */
   async resume(runId: string, snapshotId?: string): Promise<WorkflowResult> {
     const snapshot = await this.checkpointStore.load(runId, snapshotId);
     if (!snapshot) {
@@ -111,6 +144,12 @@ export class DefaultWorkflowEngine implements WorkflowEngine {
     return this.executeLoop();
   }
 
+  /**
+   * 向正在执行的目标 Unit 注入 steering 内容（运行时纠偏）。
+   *
+   * @param targetUnitId - 目标 Unit ID
+   * @param content - steering 文本
+   */
   steer(targetUnitId: UnitId, content: string): void {
     const unit = this.config.units.get(targetUnitId);
     unit?.runtime.steer(content);
@@ -122,6 +161,12 @@ export class DefaultWorkflowEngine implements WorkflowEngine {
     });
   }
 
+  /**
+   * 向目标 Unit 发送 follow-up 内容（追加指令）。
+   *
+   * @param targetUnitId - 目标 Unit ID
+   * @param content - follow-up 文本
+   */
   followUp(targetUnitId: UnitId, content: string): void {
     const unit = this.config.units.get(targetUnitId);
     unit?.runtime.followUp(content);
@@ -133,6 +178,12 @@ export class DefaultWorkflowEngine implements WorkflowEngine {
     });
   }
 
+  /**
+   * 响应人工确认（HITL）：批准或拒绝后解除暂停，继续调度。
+   *
+   * @param approved - 是否批准
+   * @param responder - 操作者标识（写入状态供审计）
+   */
   async respondToHITL(approved: boolean, responder: string): Promise<void> {
     if (approved) {
       approveHITL(this.sharedState, responder);
@@ -150,14 +201,29 @@ export class DefaultWorkflowEngine implements WorkflowEngine {
     this.paused = false;
   }
 
+  /**
+   * 获取当前 SharedState 句柄（可读写运行时状态）。
+   *
+   * @returns 共享状态实例
+   */
   getState(): SharedState {
     return this.sharedState;
   }
 
+  /**
+   * 获取 MessageBus 历史消息快照。
+   *
+   * @returns 已发布的工作流消息列表
+   */
   getMessages(): ReturnType<MessageBus['history']> {
     return this.messageBus.history();
   }
 
+  /**
+   * 获取当前运行的 `runId`。
+   *
+   * @returns 运行 ID 字符串
+   */
   getRunId(): string {
     return this.runId;
   }
@@ -410,6 +476,40 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * 代码路径入口：用已组装的 `WorkflowConfig` 创建 `WorkflowEngine`。
+ * 适合测试、Composite 等 YAML v1 难以表达的拓扑；生产编排优先 {@link createEngineFromYaml}。
+ *
+ * @param config - 含 `workflowId`、`units`、`controlFlow` 的配置
+ * @param options - 可选 Layer4 依赖与策略
+ * @returns 可调用 `run()` / `resume()` 的引擎实例
+ *
+ * @example
+ * ```ts
+ * import {
+ *   createWorkflowEngine,
+ *   createSharedState,
+ *   SequentialFlow,
+ *   createMockAdapter,
+ * } from 'uni-flow';
+ *
+ * const echo = {
+ *   id: 'echo',
+ *   runtime: createMockAdapter({ content: 'hi' }),
+ *   terminationPolicy: { type: 'stop-reason', reasons: ['stop'] },
+ *   inputAdapter: (s) => ({ task: String(s.get('task') ?? '') }),
+ *   outputAdapter: (out, s) => s.set('output.echo', out.content),
+ * };
+ * const units = new Map([[echo.id, echo]]);
+ * const engine = createWorkflowEngine({
+ *   workflowId: 'demo',
+ *   units,
+ *   controlFlow: new SequentialFlow([echo]),
+ *   sharedState: createSharedState(),
+ * });
+ * await engine.run({ task: 'ping' });
+ * ```
+ */
 export function createWorkflowEngine(
   config: WorkflowConfig,
   options?: WorkflowEngineOptions,

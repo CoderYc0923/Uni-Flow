@@ -11,8 +11,8 @@ function snapKey(runId: string, snapshotId: string): string {
 }
 
 /**
- * Redis-backed CheckpointStore. Accepts any RedisLikeClient
- * (real Redis via ioredis, or InMemoryRedisClient for local/dev).
+ * 基于 Redis（或兼容客户端）的 CheckpointStore。
+ * 可注入真实 Redis，或本地用 {@link InMemoryRedisClient}。
  */
 export class RedisCheckpointStore implements CheckpointStore {
   constructor(private client: RedisLikeClient = new InMemoryRedisClient()) {}
@@ -58,6 +58,12 @@ export class RedisCheckpointStore implements CheckpointStore {
   }
 }
 
+/**
+ * 创建 {@link RedisCheckpointStore}。
+ *
+ * @param client - Redis 兼容客户端；默认内存客户端
+ * @returns 检查点存储
+ */
 export function createRedisCheckpointStore(client?: RedisLikeClient): RedisCheckpointStore {
   return new RedisCheckpointStore(client);
 }

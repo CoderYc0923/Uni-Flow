@@ -101,3 +101,4 @@ console.log(result.completedUnits, result.state);
 - [ControlFlow](/reference/controlflow)
 - [Layer4](/reference/layer4)
 - [YAML API](/reference/yaml-api)
+- [生成附录说明](/reference/typedoc-appendix) · 查找 `createWorkflowEngine`：[附录正文](/reference/generated/)

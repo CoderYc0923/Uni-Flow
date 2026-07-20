@@ -2,10 +2,17 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import type { WorkflowRegistry } from './registry.js';
 import type { ContextManager } from '../layer4/types.js';
 
+/**
+ * Orchestrator HTTP 服务启动选项。
+ */
 export interface OrchestratorServerOptions {
+  /** 工作流注册表（必填）。 */
   registry: WorkflowRegistry;
+  /** 可选上下文管理器（供 `/memory/search` 等）。 */
   contextManager?: ContextManager;
+  /** 监听主机，默认 `127.0.0.1`。 */
   host?: string;
+  /** 监听端口，默认 `8787`。 */
   port?: number;
 }
 
@@ -49,18 +56,18 @@ function matchPath(
 }
 
 /**
- * Lightweight HTTP orchestrator (Node built-in http — no Express/Fastify required).
+ * 轻量 Orchestrator HTTP 服务（Node 内置 `http`，无需 Express/Fastify）。
  *
- * Routes:
- *   GET  /health
- *   GET  /workflows
- *   POST /workflows/from-yaml
- *   POST /workflows/:id/runs
- *   GET  /workflows/:id/runs/:runId
- *   POST /workflows/:id/runs/:runId/resume
- *   POST /workflows/:id/runs/:runId/hitl
- *   GET  /memory/search?q=...
- *   POST /mcp  (JSON-RPC MCP tools/call)
+ * 路由：
+ * - `GET /health`
+ * - `GET /workflows`
+ * - `POST /workflows/from-yaml`
+ * - `POST /workflows/:id/runs`
+ * - `GET /workflows/:id/runs/:runId`
+ * - `POST /workflows/:id/runs/:runId/resume`
+ * - `POST /workflows/:id/runs/:runId/hitl`
+ * - `GET /memory/search?q=...`
+ * - `POST /mcp`（JSON-RPC MCP tools/call）
  */
 export class OrchestratorServer {
   private server: Server | null = null;
@@ -69,6 +76,9 @@ export class OrchestratorServer {
   private readonly host: string;
   private port: number;
 
+  /**
+   * @param options - registry 与监听地址
+   */
   constructor(options: OrchestratorServerOptions) {
     this.registry = options.registry;
     this.contextManager = options.contextManager;
@@ -76,6 +86,11 @@ export class OrchestratorServer {
     this.port = options.port ?? 8787;
   }
 
+  /**
+   * 开始监听。
+   *
+   * @returns 实际 `host` / `port` / `url`
+   */
   async start(): Promise<{ host: string; port: number; url: string }> {
     if (this.server) {
       return { host: this.host, port: this.port, url: `http://${this.host}:${this.port}` };
@@ -98,6 +113,9 @@ export class OrchestratorServer {
     return { host: this.host, port: this.port, url: `http://${this.host}:${this.port}` };
   }
 
+  /**
+   * 停止监听并关闭底层 HTTP server。
+   */
   async stop(): Promise<void> {
     if (!this.server) return;
     const server = this.server;
@@ -350,6 +368,12 @@ export class OrchestratorServer {
   }
 }
 
+/**
+ * 创建 {@link OrchestratorServer}。
+ *
+ * @param options - 须提供 `registry`
+ * @returns 尚未 `start()` 的服务实例
+ */
 export function createOrchestratorServer(
   options: OrchestratorServerOptions,
 ): OrchestratorServer {

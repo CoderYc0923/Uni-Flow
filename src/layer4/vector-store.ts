@@ -1,5 +1,6 @@
 import type { MemoryEntry, SearchOptions } from './types.js';
 
+/** 向量记忆存储接口：按 collection upsert / search / delete。 */
 export interface VectorStore {
   upsert(collection: string, entries: MemoryEntry[]): Promise<void>;
   search(collection: string, query: string, options?: SearchOptions): Promise<MemoryEntry[]>;
@@ -7,8 +8,7 @@ export interface VectorStore {
 }
 
 /**
- * In-memory vector store with bag-of-words similarity.
- * Production: swap for PgVectorStore or QdrantStore implementing the same interface.
+ * 进程内向量存储（词袋相似度）；生产可换 {@link PgVectorStore} 等实现同一接口。
  */
 export class InMemoryVectorStore implements VectorStore {
   private collections = new Map<string, MemoryEntry[]>();
@@ -48,16 +48,18 @@ export class InMemoryVectorStore implements VectorStore {
 }
 
 /**
- * Pgvector-oriented interface adapter.
- * Embeds content via optional embedFn, stores vectors as float arrays in memory
- * simulating a pgvector table (Phase 3 interface; wire to real pg later).
+ * 面向 pgvector 的适配器配置（当前用内存表模拟；可后续接真实 PG）。
  */
 export interface PgVectorConfig {
-  /** Optional embedding function. Defaults to hash-bag embedding. */
+  /** 可选嵌入函数；默认哈希词袋嵌入。 */
   embedFn?: (text: string) => Promise<number[]>;
+  /** 向量维度，默认 64。 */
   dimensions?: number;
 }
 
+/**
+ * 带嵌入的向量存储实现（内存模拟 pgvector 表）。
+ */
 export class PgVectorStore implements VectorStore {
   private tables = new Map<string, { entry: MemoryEntry; embedding: number[] }[]>();
   private embedFn: (text: string) => Promise<number[]>;
@@ -137,6 +139,13 @@ function cosine(a: number[], b: number[]): number {
   return dot / (Math.sqrt(na) * Math.sqrt(nb) || 1);
 }
 
+/**
+ * 创建向量存储：`memory`（默认）或 `pgvector` 模拟实现。
+ *
+ * @param kind - 实现种类
+ * @param config - 仅 `pgvector` 时使用
+ * @returns {@link VectorStore}
+ */
 export function createVectorStore(kind: 'memory' | 'pgvector' = 'memory', config?: PgVectorConfig): VectorStore {
   return kind === 'pgvector' ? new PgVectorStore(config) : new InMemoryVectorStore();
 }

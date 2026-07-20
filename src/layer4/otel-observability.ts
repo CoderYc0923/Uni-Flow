@@ -3,8 +3,7 @@ import type { TokenUsage, UnitId } from '../core/types.js';
 import { InMemoryObservability } from './observability.js';
 
 /**
- * Optional OpenTelemetry-compatible exporter hooks.
- * Pass real OTel API objects when @opentelemetry/api is installed.
+ * 可选 OpenTelemetry 导出钩子；安装 `@opentelemetry/api` 后可传入真实 API 对象。
  */
 export interface OTelHooks {
   startActiveSpan?: (
@@ -15,8 +14,7 @@ export interface OTelHooks {
 }
 
 /**
- * Observability that mirrors spans/metrics to optional OpenTelemetry hooks
- * while keeping the in-memory buffer for local inspection.
+ * 可观测性实现：在内存缓冲之外，可选镜像到 OpenTelemetry hooks。
  */
 export class OpenTelemetryObservability implements Observability {
   private inner = new InMemoryObservability();
@@ -75,12 +73,20 @@ export class OpenTelemetryObservability implements Observability {
   }
 }
 
+/**
+ * 创建 {@link OpenTelemetryObservability}。
+ *
+ * @param hooks - 可选 OTel 钩子
+ * @returns 可观测性实例
+ */
 export function createOpenTelemetryObservability(hooks?: OTelHooks): OpenTelemetryObservability {
   return new OpenTelemetryObservability(hooks);
 }
 
 /**
- * Try to load @opentelemetry/api and wire basic hooks. Returns undefined if not installed.
+ * 尝试加载 `@opentelemetry/api` 并接线基础 hooks；未安装则返回 `undefined`。
+ *
+ * @returns OTel 可观测性实例，或未安装时为 `undefined`
  */
 export async function tryCreateOTelFromPackage(): Promise<OpenTelemetryObservability | undefined> {
   try {

@@ -139,6 +139,14 @@ async function buildUnit(
   return wrapAdapter(yamlUnit.id, result, yamlUnit);
 }
 
+/**
+ * 将已校验的 Workflow YAML 文档物化为 `WorkflowConfig`（含 ControlFlow 与 Units）。
+ * 不启动运行；适合先拿配置再交给 {@link createWorkflowEngine} 或自定义包装。
+ *
+ * @param doc - 通过 schema 校验的 `WorkflowYamlDocument`
+ * @param options - `registry` / `bindings` / `engineOptions`
+ * @returns `config` 与合并后的引擎 `options`
+ */
 export async function createWorkflowConfigFromDocument(
   doc: WorkflowYamlDocument,
   options: CreateEngineFromYamlOptions = {},
@@ -171,6 +179,13 @@ export async function createWorkflowConfigFromDocument(
   };
 }
 
+/**
+ * 从已校验文档直接构造可运行的 `WorkflowEngine`。
+ *
+ * @param doc - `WorkflowYamlDocument`
+ * @param options - 插件注册表与引擎选项
+ * @returns 可调用 `run()` 的引擎实例
+ */
 export async function createEngineFromDocument(
   doc: WorkflowYamlDocument,
   options: CreateEngineFromYamlOptions = {},
@@ -189,7 +204,49 @@ async function resolveYamlText(source: string): Promise<string> {
 }
 
 /**
- * Load a Workflow YAML from file path or raw YAML string and construct an Engine.
+ * YAML 路径主入口：从文件路径或 YAML 字符串加载、校验并构造 `WorkflowEngine`。
+ *
+ * - `source` 若为可读文件路径则读文件；否则当作 YAML 文本
+ * - 校验走 {@link validateWorkflowYamlSource}；`uses` 经 builtin + `registry` / `bindings` 解析
+ * - 生产编排优先本函数；代码拼拓扑请用 {@link createWorkflowEngine}
+ *
+ * @param source - Workflow YAML 文件路径，或完整 YAML 字符串
+ * @param options - 插件表、HTTP bindings、额外引擎选项
+ * @returns 可调用 `run()` / `resume()` 的引擎
+ *
+ * @example
+ * ```ts
+ * import { createEngineFromYaml, createMockAdapter } from 'uni-flow';
+ *
+ * const engine = await createEngineFromYaml(
+ *   `apiVersion: uniflow/v1
+ * kind: Workflow
+ * metadata:
+ *   id: demo
+ * spec:
+ *   units:
+ *     - id: echo
+ *       uses: demo.echo
+ *   flow:
+ *     type: sequential
+ *     order: [echo]
+ * `,
+ *   {
+ *     registry: {
+ *       'demo.echo': () => createMockAdapter({
+ *         responseFn: (input) => ({
+ *           content: `echo:${input.task}`,
+ *           toolCalls: [],
+ *           stopReason: 'stop',
+ *           metadata: {},
+ *         }),
+ *       }),
+ *     },
+ *   },
+ * );
+ * const result = await engine.run({ task: 'hello' });
+ * console.log(result.state['output.echo']);
+ * ```
  */
 export async function createEngineFromYaml(
   source: string,
@@ -200,6 +257,14 @@ export async function createEngineFromYaml(
   return createEngineFromDocument(doc, options);
 }
 
+/**
+ * 从路径或 YAML 字符串构建配置（含 `workflowId`），不立即创建引擎。
+ * Orchestrator `registerFromYaml` 等场景会复用本函数以便每次 run 拿到新 ControlFlow 游标。
+ *
+ * @param source - 文件路径或 YAML 文本
+ * @param options - 同 {@link createEngineFromYaml}
+ * @returns `workflowId`、`config` 与可选引擎 `options`
+ */
 export async function createWorkflowConfigFromYaml(
   source: string,
   options: CreateEngineFromYamlOptions = {},

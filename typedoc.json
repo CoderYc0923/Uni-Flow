@@ -3,10 +3,21 @@
   "entryPoints": ["src/index.ts"],
   "out": "docs-web/reference/generated",
   "plugin": ["typedoc-plugin-markdown"],
+  "name": "uni-flow 公开 API（中文注解）",
   "readme": "none",
   "excludePrivate": true,
   "excludeInternal": true,
   "skipErrorChecking": true,
   "githubPages": false,
-  "entryFileName": "index.md"
+  "entryFileName": "index.md",
+  "excludeExternals": true,
+  "categorizeByGroup": false,
+  "kindSortOrder": [
+    "Function",
+    "Class",
+    "Interface",
+    "TypeAlias",
+    "Variable",
+    "Enum"
+  ]
 }

@@ -2,6 +2,9 @@ import type { AgentOutput } from '../core/types.js';
 import type { PolicyConfig, PolicyContext, PolicyDecision, PolicyEngine } from './types.js';
 import { DEFAULT_POLICY_CONFIG } from './types.js';
 
+/**
+ * 默认策略引擎：重试、超时、熔断、预算与限流判定。
+ */
 export class DefaultPolicyEngine implements PolicyEngine {
   private consecutiveFailures = 0;
   private circuitOpenedAt: number | null = null;
@@ -77,6 +80,12 @@ export class DefaultPolicyEngine implements PolicyEngine {
   }
 }
 
+/**
+ * 创建 {@link DefaultPolicyEngine}，可选局部覆盖 {@link PolicyConfig}。
+ *
+ * @param config - 策略局部配置
+ * @returns 策略引擎实例
+ */
 export function createPolicyEngine(config?: Partial<PolicyConfig>): DefaultPolicyEngine {
   return new DefaultPolicyEngine({ ...DEFAULT_POLICY_CONFIG, ...config });
 }

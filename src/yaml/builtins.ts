@@ -36,11 +36,23 @@ function httpFromConfig(config?: Record<string, unknown>): RuntimeAdapter {
   });
 }
 
+/**
+ * 内建 `uses` 插件：`builtin.mock`（本地占位）与 `builtin.http`（需 `config.endpoint`）。
+ * 自定义插件请通过 {@link createEngineFromYaml} 的 `registry` 注册。
+ */
 export const BUILTIN_PLUGINS: UnitPluginRegistry = {
   'builtin.mock': (config) => mockFromConfig(config),
   'builtin.http': (config) => httpFromConfig(config),
 };
 
+/**
+ * 按名解析 Unit 插件：先查用户 `registry`，再查 builtins；都没有则抛错。
+ *
+ * @param uses - 插件名（如 `demo.echo` / `builtin.mock`）
+ * @param registry - 用户注册表（可选）
+ * @param builtins - 内建表，默认 {@link BUILTIN_PLUGINS}
+ * @returns 插件工厂或静态结果
+ */
 export function resolvePlugin(
   uses: string,
   registry: UnitPluginRegistry | undefined,

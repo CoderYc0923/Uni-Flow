@@ -1,60 +1,101 @@
 # 安装
 
-**完整 Uni-Flow Engine（YAML → ControlFlow → 管线）目前仅 TypeScript / Node.js。**  
-Python / Java SDK 是 HTTP 客户端或 Unit 边界，不能替代进程内 Engine（远期可移植，当前勿按「完整编排」安装）。
+本页把你当成第一次接触 Uni-Flow 的 TypeScript 开发者：装好依赖，确认能 `import`，再进入下一页跑通第一个工作流。
 
-## 环境要求
+## 你将完成什么
 
-| 项目 | 要求 |
-|------|------|
-| Node.js | `>= 18` |
-| 包管理器 | npm / pnpm / yarn |
+在**自己的** Node/TS 项目里装上 `uni-flow`，并能写出一行：
 
-## 在自有 TS 项目中使用（推荐）
+```typescript
+import { createEngineFromYaml } from 'uni-flow';
+```
 
-包名：`uni-flow`（见仓库根 `package.json`）。
+而不报「找不到模块」。
 
-### 目标命令（发布到 npm 后）
+## 先记住两句话
+
+1. **完整 Engine（YAML → 控制流 → 执行）目前只有 TypeScript。** Python / Java SDK 是 HTTP 客户端或 Unit 边界，不是「本语言里的完整编排引擎」。
+2. **单项目进程内跑编排，一般不需要启动 Orchestrator。**
+
+## 前置条件
+
+| 项目 | 要求 | 如何自检 |
+|------|------|----------|
+| Node.js | `>= 18` | 终端执行 `node -v` |
+| 包管理器 | npm / pnpm / yarn | `npm -v` |
+| 项目类型 | TypeScript 或可跑 TS 的 Node 项目 | 已有 `package.json` |
+
+若还没有项目：
+
+```bash
+mkdir my-uniflow-app
+cd my-uniflow-app
+npm init -y
+npm install typescript tsx --save-dev
+npx tsc --init
+```
+
+## 步骤 1：安装 `uni-flow`
+
+包名见仓库根目录 `package.json` 的 `name` 字段（当前为 `uni-flow`）。
+
+### 方式 A：发布到 npm 之后（目标形态）
 
 ```bash
 npm install uni-flow
 ```
 
-### 今日可用路径（尚未发布到 registry 时）
-
-**Git 依赖：**
+### 方式 B：今日常用 — Git 依赖
 
 ```bash
 npm install github:CoderYc0923/Uni-Flow#main
 ```
 
-**本地 path（开发 Uni-Flow 本仓时）：**
+### 方式 C：本地 path（你正在改 Uni-Flow 本仓时）
 
 ```bash
-# 在 Uni-Flow 仓库
-npm install && npm run build
+# 终端 1：Uni-Flow 仓库
+cd /path/to/Uni-Flow
+npm install
+npm run build
 
-# 在你的应用 package.json
+# 在你的应用 package.json 的 dependencies 中写：
 # "uni-flow": "file:../Uni-Flow"
+# 然后：
 npm install
 ```
 
-然后在应用中：
+> Windows 注意：`file:` 路径用正斜杠或正确的相对路径；改完本仓源码后需重新 `npm run build`，应用才能吃到新 `dist/`。
+
+## 步骤 2：写一个最小探测脚本
+
+在应用根目录创建 `smoke-import.mts`（或 `.ts`）：
 
 ```typescript
-import { createEngineFromYaml } from 'uni-flow';
+import { createEngineFromYaml, createMockAdapter } from 'uni-flow';
 
-const engine = await createEngineFromYaml('./my.workflow.yaml', {
-  // registry: { 'my.agent': () => ... }
-});
-const result = await engine.run({ task: 'hello' });
+console.log('ok', typeof createEngineFromYaml, typeof createMockAdapter);
 ```
 
-单项目 **不必** 启动 Orchestrator；进程内 Engine 即可。见 [快速开始](/guide/quickstart)。
+运行：
 
-## 贡献者：克隆本仓库
+```bash
+npx tsx smoke-import.mts
+```
 
-维护 / 跑文档与示例时：
+### 预期结果
+
+终端类似：
+
+```text
+ok function function
+```
+
+若出现 `Cannot find module 'uni-flow'`：回到步骤 1，确认 `node_modules/uni-flow` 存在，且本仓 path 依赖已 `build`。
+
+## 步骤 3（可选）：贡献者克隆本仓库
+
+只有在你要**改引擎、跑文档站、跑仓库内示例**时才需要：
 
 ```bash
 git clone https://github.com/CoderYc0923/Uni-Flow.git
@@ -68,8 +109,24 @@ npm test
 |------|------|
 | `npm run build` | 编译到 `dist/` |
 | `npm test` | Vitest |
-| `npx uniflow validate <yaml>` | Schema 校验（需先 build） |
-| `npm run docs:dev` | 本地文档 |
+| `npx uniflow validate <yaml>` | 校验 Workflow YAML（需先 build） |
+| `npm run docs:dev` | 本地文档站 |
+
+## 常见问题
+
+| 现象 | 处理 |
+|------|------|
+| path 依赖改了代码但行为没变 | 在本仓重新 `npm run build` |
+| `tsx` 找不到 | `npm install -D tsx` |
+| 想用 Python/Java「装完整 Engine」 | 当前做不到；见能力边界，跨项目用 HTTP Unit |
+
+## Orchestrator 何时需要？
+
+| 场景 | 需要 Orchestrator？ |
+|------|---------------------|
+| 单 TS 进程内跑 YAML / 代码 API | **否** |
+| 多进程注册 YAML、用 HTTP 启 run | **是** |
+| 父项目把另一 TS 服务当 Unit（子暴露 `/execute`） | 父可用进程内 Engine + bindings；Orchestrator 可选 |
 
 ## 可选依赖
 
@@ -78,20 +135,8 @@ npm test
 | `@opentelemetry/api` | OpenTelemetry |
 | `ioredis` | Redis Checkpoint |
 
-未安装时降级为内存实现。
-
-## Orchestrator 何时需要？
-
-| 场景 | 是否需要 Orchestrator |
-|------|------------------------|
-| 单 TS 进程内跑 YAML / 代码 API | **否** |
-| 多进程注册 YAML、HTTP 启 run、父项目远程 `from-yaml` | **是** |
-| 把另一 TS 项目当 Unit（子暴露 `/execute`） | 父可用进程内 Engine + HttpAdapter，或 Orchestrator；子是独立 HTTP 服务 |
-
-跨项目（TS↔TS Unit）：[跨项目复用](/guide/cross-project)。
+未安装时自动降级为内存实现，不影响入门。
 
 ## 下一步
 
-- [快速开始](/guide/quickstart)
-- [YAML 与 validate](/guide/yaml)
-- [跨项目复用（TS↔TS）](/guide/cross-project)
+跟做第一个工作流 → [快速开始](/guide/quickstart)（推荐先走路径 A：Mock Sequential）。

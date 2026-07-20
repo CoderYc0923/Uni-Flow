@@ -1,5 +1,6 @@
 import type { CheckpointStore, SnapshotMeta, WorkflowSnapshot } from './types.js';
 
+/** 进程内检查点存储：按 runId 保存 / 加载 / 列出快照。 */
 export class InMemoryCheckpointStore implements CheckpointStore {
   private snapshots = new Map<string, WorkflowSnapshot[]>();
 
@@ -35,6 +36,7 @@ export class InMemoryCheckpointStore implements CheckpointStore {
   }
 }
 
+/** 创建默认进程内 {@link CheckpointStore}。 */
 export function createCheckpointStore(): CheckpointStore {
   return new InMemoryCheckpointStore();
 }

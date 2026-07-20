@@ -15,14 +15,20 @@ function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
+/**
+ * {@link EnhancedContextManager} 选项：可插拔向量库与长期记忆。
+ */
 export interface EnhancedContextManagerOptions {
+  /** 可选向量存储。 */
   vectorStore?: VectorStore;
+  /** 可选长期记忆存储。 */
   longTermMemory?: LongTermMemoryStore;
+  /** 默认向量 collection 名。 */
   defaultCollection?: string;
 }
 
 /**
- * ContextManager with pluggable VectorStore + LongTermMemoryStore.
+ * 增强版 ContextManager：可挂载 VectorStore 与 LongTermMemoryStore。
  */
 export class EnhancedContextManager implements ContextManager {
   private workingMemory = new Map<string, Message[]>();
@@ -183,6 +189,12 @@ function bagSimilarity(a: string, b: string): number {
   return n / Math.max(wa.size, wb.size, 1);
 }
 
+/**
+ * 创建 {@link EnhancedContextManager}。
+ *
+ * @param options - 向量库 / 长期记忆等
+ * @returns 增强上下文管理器
+ */
 export function createEnhancedContextManager(
   options?: EnhancedContextManagerOptions,
 ): EnhancedContextManager {

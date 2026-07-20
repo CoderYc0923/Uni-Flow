@@ -19,6 +19,10 @@ interface Subscription {
   handler: MessageHandler;
 }
 
+/**
+ * 进程内消息总线：发布 / 订阅 / 历史查询，支持 at-least-once 或 exactly-once。
+ * 一般通过 {@link createMessageBus} 获取。
+ */
 export class InMemoryMessageBus implements MessageBus {
   readonly deliveryGuarantee: 'at-least-once' | 'exactly-once';
   private messages: WorkflowMessage[] = [];
@@ -69,6 +73,12 @@ export class InMemoryMessageBus implements MessageBus {
   }
 }
 
+/**
+ * 创建进程内 {@link MessageBus}。
+ *
+ * @param deliveryGuarantee - 投递保证，默认 `'at-least-once'`
+ * @returns 消息总线实例
+ */
 export function createMessageBus(
   deliveryGuarantee: 'at-least-once' | 'exactly-once' = 'at-least-once',
 ): MessageBus {

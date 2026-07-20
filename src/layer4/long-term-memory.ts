@@ -1,3 +1,4 @@
+/** 长期记忆条目。 */
 export interface LongTermMemoryEntry {
   id: string;
   scope: string;
@@ -7,6 +8,7 @@ export interface LongTermMemoryEntry {
   updatedAt: number;
 }
 
+/** 长期记忆存储接口。 */
 export interface LongTermMemoryStore {
   put(entry: Omit<LongTermMemoryEntry, 'createdAt' | 'updatedAt'> & { createdAt?: number }): Promise<void>;
   get(id: string): Promise<LongTermMemoryEntry | null>;
@@ -16,8 +18,7 @@ export interface LongTermMemoryStore {
 }
 
 /**
- * Persistent long-term memory (Phase 3). Default is in-memory;
- * FileLongTermMemoryStore persists JSON to disk for local durability.
+ * 进程内长期记忆；需要落盘可用 {@link createFileLongTermMemoryStore}。
  */
 export class InMemoryLongTermMemoryStore implements LongTermMemoryStore {
   private entries = new Map<string, LongTermMemoryEntry>();
@@ -57,6 +58,12 @@ export class InMemoryLongTermMemoryStore implements LongTermMemoryStore {
   }
 }
 
+/**
+ * 创建落盘 JSON 的长期记忆存储（包装内存实现，每次写后 flush）。
+ *
+ * @param filePath - JSON 文件路径
+ * @returns {@link LongTermMemoryStore}
+ */
 export async function createFileLongTermMemoryStore(
   filePath: string,
 ): Promise<LongTermMemoryStore> {
@@ -94,6 +101,7 @@ export async function createFileLongTermMemoryStore(
   };
 }
 
+/** 创建默认进程内 {@link LongTermMemoryStore}。 */
 export function createLongTermMemoryStore(): LongTermMemoryStore {
   return new InMemoryLongTermMemoryStore();
 }

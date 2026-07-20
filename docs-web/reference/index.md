@@ -7,7 +7,7 @@
 1. **Orchestrator HTTP** — 跨进程 / 跨语言时通过 REST 调用执行核。
 2. **SDK** — TypeScript / Python / Java 封装上述 HTTP，并提供本地 YAML 校验。
 3. **进程内 API** — `createWorkflowEngine`、`createEngineFromYaml` 等，适合 TS 单进程集成。
-4. **生成附录** — TypeDoc 自动生成的符号索引（需先运行 `npm run docs:api`）。
+4. **生成附录** — TypeDoc 从源码 JSDoc **自动生成**的符号索引（中文注解；需先运行 `npm run docs:api`）。先读[生成附录说明](/reference/typedoc-appendix)，再打开[附录正文](/reference/generated/)。
 
 ## 目录
 
@@ -47,7 +47,10 @@
 
 ### 自动生成
 
-[TypeDoc 附录](/reference/generated/) — `npm run docs:api`
+| 页 | 说明 |
+|----|------|
+| [生成附录说明](/reference/typedoc-appendix) | 中文注解、再生命令、与手写手册的关系 |
+| [生成附录（正文）](/reference/generated/) | TypeDoc 输出；`npm run docs:api` 更新 |
 
 ## 通用类型：RunRecord
 

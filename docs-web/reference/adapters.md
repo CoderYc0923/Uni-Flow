@@ -98,3 +98,4 @@ function createMcpAdapter(config: McpAdapterConfig): McpAdapter
 
 - [uses 与插件](/guide/uses)
 - [Adapters 源码](https://github.com/CoderYc0923/Uni-Flow/tree/main/src/adapters)
+- [生成附录说明](/reference/typedoc-appendix) · 查找 `createMockAdapter` / `createHttpAdapter`：[附录正文](/reference/generated/)

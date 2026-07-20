@@ -3,6 +3,7 @@ import type { LogLevel, Observability, SpanContext, SpanStatus } from './types.j
 
 let spanCounter = 0;
 
+/** 进程内可观测性实现：span、指标、日志与成本累计（内存）。 */
 export class InMemoryObservability implements Observability {
   private spans: (SpanContext & { endTime?: number; status?: SpanStatus })[] = [];
   private metrics: { name: string; value: number; tags: Record<string, string> }[] = [];
@@ -73,6 +74,7 @@ export class InMemoryObservability implements Observability {
   }
 }
 
+/** 创建默认进程内 {@link Observability}。 */
 export function createObservability(): InMemoryObservability {
   return new InMemoryObservability();
 }

@@ -179,3 +179,4 @@ const localRun = await local.startWorkflow('demo', { task: 'test' }, { sync: tru
 
 - [Orchestrator HTTP](/reference/http/)
 - [Engine](/reference/engine)
+- [生成附录说明](/reference/typedoc-appendix) · 查找 `UniFlowClient` / `createUniFlowClient`：[附录正文](/reference/generated/)

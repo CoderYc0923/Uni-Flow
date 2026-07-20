@@ -13,6 +13,7 @@ function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
+/** 进程内上下文管理器：工作记忆、会话摘要与简易向量检索。 */
 export class InMemoryContextManager implements ContextManager {
   private workingMemory = new Map<string, Message[]>();
   private sessionMemory = new Map<string, { unitId: UnitId; summary: string }[]>();
@@ -131,6 +132,7 @@ export class InMemoryContextManager implements ContextManager {
   }
 }
 
+/** 创建默认进程内 {@link InMemoryContextManager}。 */
 export function createContextManager(): InMemoryContextManager {
   return new InMemoryContextManager();
 }

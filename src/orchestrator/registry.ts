@@ -10,28 +10,42 @@ import {
   YamlValidationError,
 } from '../yaml/index.js';
 
+/** 一次运行的生命周期状态。 */
 export type RunStatus = 'pending' | 'running' | 'paused' | 'completed' | 'failed';
 
+/**
+ * Orchestrator 内存中的运行记录（含可选结果与错误）。
+ */
 export interface RunRecord {
+  /** 运行 id（与 Engine `getRunId()` 一致）。 */
   runId: string;
+  /** 所属工作流 id。 */
   workflowId: string;
+  /** 当前状态。 */
   status: RunStatus;
+  /** 创建时间戳（ms）。 */
   createdAt: number;
+  /** 最近更新时间戳（ms）。 */
   updatedAt: number;
+  /** 成功或暂停时的结果。 */
   result?: WorkflowResult;
+  /** 失败时的错误信息。 */
   error?: string;
 }
 
+/** 工作流工厂的返回值：配置 + 可选引擎选项。 */
 export type WorkflowFactoryResult = {
   config: WorkflowConfig;
   options?: WorkflowEngineOptions;
 };
 
+/** 惰性构造工作流配置的工厂（可异步）。 */
 export type WorkflowFactory = () => WorkflowFactoryResult | Promise<WorkflowFactoryResult>;
 
 /**
- * In-process registry that holds workflow factories and live run engines.
- * Factories live in process memory and are lost when the Orchestrator process exits.
+ * 进程内工作流注册表：保存工厂与进行中的 Engine / RunRecord。
+ *
+ * 注册信息仅在进程内存中；Orchestrator 重启后需重新 `register` / `registerFromYaml`。
  */
 export class WorkflowRegistry {
   private factories = new Map<string, WorkflowFactory>();
@@ -39,17 +53,29 @@ export class WorkflowRegistry {
   private engines = new Map<string, WorkflowEngine>();
   private defaultOptions: WorkflowEngineOptions;
 
+  /**
+   * @param defaultOptions - 创建 Engine 时的默认 Layer4 / 策略选项
+   */
   constructor(defaultOptions: WorkflowEngineOptions = {}) {
     this.defaultOptions = defaultOptions;
   }
 
+  /**
+   * 注册工作流工厂。
+   *
+   * @param workflowId - 工作流 id
+   * @param factory - 返回 config / options 的工厂
+   */
   register(workflowId: string, factory: WorkflowFactory): void {
     this.factories.set(workflowId, factory);
   }
 
   /**
-   * Validate YAML, resolve bindings, and register under metadata.id.
-   * Re-building config on each run so ControlFlow cursor state is fresh.
+   * 校验 YAML、解析 bindings，并以 `metadata.id` 注册；每次 run 重新构建配置以刷新 ControlFlow 游标。
+   *
+   * @param yaml - Workflow YAML 文本
+   * @param bindings - 可选 HTTP `uses` 绑定
+   * @returns 注册后的 `workflowId`
    */
   async registerFromYaml(
     yaml: string,
@@ -61,18 +87,22 @@ export class WorkflowRegistry {
     return { workflowId };
   }
 
+  /** 是否已注册该工作流。 */
   has(workflowId: string): boolean {
     return this.factories.has(workflowId);
   }
 
+  /** 列出已注册工作流 id。 */
   listWorkflows(): string[] {
     return [...this.factories.keys()];
   }
 
+  /** 按 runId 查询运行记录。 */
   getRun(runId: string): RunRecord | undefined {
     return this.runs.get(runId);
   }
 
+  /** 按 runId 取仍存活的 Engine（若有）。 */
   getEngine(runId: string): WorkflowEngine | undefined {
     return this.engines.get(runId);
   }
@@ -85,6 +115,13 @@ export class WorkflowRegistry {
     return factory();
   }
 
+  /**
+   * 异步启动一次运行（立即返回 `running` 的 RunRecord，后台执行 `engine.run`）。
+   *
+   * @param workflowId - 已注册工作流
+   * @param input - 写入 SharedState 的初始输入
+   * @returns 新建的运行记录
+   */
   async startRun(
     workflowId: string,
     input?: Record<string, unknown>,
@@ -107,6 +144,13 @@ export class WorkflowRegistry {
     return record;
   }
 
+  /**
+   * 同步启动并等待运行结束（或暂停于 HITL）。
+   *
+   * @param workflowId - 已注册工作流
+   * @param input - 初始 SharedState 输入
+   * @returns 完成后的运行记录
+   */
   async startRunSync(
     workflowId: string,
     input?: Record<string, unknown>,
@@ -138,6 +182,13 @@ export class WorkflowRegistry {
     return record;
   }
 
+  /**
+   * 从检查点恢复指定 run。
+   *
+   * @param runId - 运行 id
+   * @param snapshotId - 可选快照 id
+   * @returns 更新后的运行记录
+   */
   async resumeRun(runId: string, snapshotId?: string): Promise<RunRecord> {
     const record = this.runs.get(runId);
     if (!record) {
@@ -167,6 +218,14 @@ export class WorkflowRegistry {
     return record;
   }
 
+  /**
+   * 响应 HITL 并继续 resume。
+   *
+   * @param runId - 运行 id
+   * @param approved - 是否批准
+   * @param responder - 审批人标识
+   * @returns 继续执行后的运行记录
+   */
   async respondHITL(runId: string, approved: boolean, responder: string): Promise<RunRecord> {
     const engine = this.engines.get(runId);
     const record = this.runs.get(runId);
@@ -202,6 +261,12 @@ export class WorkflowRegistry {
   }
 }
 
+/**
+ * 创建进程内 {@link WorkflowRegistry}。
+ *
+ * @param defaultOptions - 默认引擎选项
+ * @returns 注册表实例
+ */
 export function createWorkflowRegistry(
   defaultOptions?: WorkflowEngineOptions,
 ): WorkflowRegistry {
