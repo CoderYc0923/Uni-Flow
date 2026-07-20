@@ -32,7 +32,7 @@
 
 | 语言 | 目标 | 今日可写清的路径 |
 |------|------|------------------|
-| TS | `npm install uni-flow` | 包已备 `package.json`；未发布则 `npm install github:...` 或 workspace path |
+| TS | `npm install virtual-uni-flow` | 包已备 `package.json`；未发布则 `npm install github:...` 或 workspace path |
 | Python | `pip install uniflow-sdk` | `pip install -e sdk/python` |
 | Java | Maven/Gradle 坐标 | 新增 `sdk/java/pom.xml` + `mvn install` 本地坐标 |
 

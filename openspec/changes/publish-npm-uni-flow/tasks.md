@@ -12,11 +12,11 @@
 ## 3. 发布
 
 - [x] 3.1 维护者登录 npm 后执行 `npm publish`（首发 `0.1.0`；失败则按 semver bump，勿 force）
-- [x] 3.2 发布后验证：`npm view uni-flow`；干净目录 `npm install uni-flow` 可 import
+- [x] 3.2 发布后验证：`npm view uni-flow`；干净目录 `npm install virtual-uni-flow` 可 import
 
 ## 4. 文档对齐
 
-- [x] 4.1 更新 `docs-web/guide/install.md`：主路径 `npm install uni-flow`
+- [x] 4.1 更新 `docs-web/guide/install.md`：主路径 `npm install virtual-uni-flow`
 - [x] 4.2 更新 README（及必要时 AGENTS 一句）安装口径
 
 ## 5. 收尾（可选）

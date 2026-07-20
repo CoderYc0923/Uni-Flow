@@ -25,7 +25,7 @@ Publishing SHALL rebuild (or equivalently guarantee up-to-date) `dist` before up
 The project SHALL publish `uni-flow` to the public npm registry at the agreed version (default `0.1.0` if free), then verify with `npm view` and a clean-directory install that `import` from `uni-flow` resolves.
 
 #### Scenario: Clean install works after publish
-- **WHEN** publish succeeds and a fresh directory runs `npm install uni-flow`
+- **WHEN** publish succeeds and a fresh directory runs `npm install virtual-uni-flow`
 - **THEN** Node can resolve the package entry without Git/`file:` dependency
 
 ### Requirement: Name conflict handling

@@ -10,7 +10,7 @@
 
 - 包元数据与打包边界达到可发布质量
 - 首发 `uni-flow@0.1.0`（若 registry 上同名冲突则改策略，见 Open Questions）
-- 发布后文档默认写 `npm install uni-flow`
+- 发布后文档默认写 `npm install virtual-uni-flow`
 - 给出可重复的发布检查清单（pack / publish / verify）
 
 **Non-Goals:**
@@ -49,13 +49,13 @@
 1. 维护者 `npm login`（或已有 token）
 2. `npm pack --dry-run` / `npm pack` 目视
 3. `npm publish --access public`（非 scoped 时 access 可省略；scoped 才强制）
-4. 验证：`npm view uni-flow`；临时目录 `npm install uni-flow` + 最小 import
+4. 验证：`npm view uni-flow`；临时目录 `npm install virtual-uni-flow` + 最小 import
 
 OTP / 2FA：由维护者在终端交互完成；agent 不保存 token。
 
 ### D6：文档切换
 
-- `docs-web/guide/install.md`、README：主路径改为 `npm install uni-flow`；Git/`file:` 移到「贡献者 / 开发本仓」小节
+- `docs-web/guide/install.md`、README：主路径改为 `npm install virtual-uni-flow`；Git/`file:` 移到「贡献者 / 开发本仓」小节
 - 与进行中的 `docs-sdk-install-api-yaml-depth` 互补：本 change 只改「TS 已可 npm 安装」事实
 
 ## Risks / Trade-offs
