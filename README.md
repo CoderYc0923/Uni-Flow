@@ -1,9 +1,9 @@
 # Uni-Flow
 
-**跨项目统一编排标准库**——拓扑可声明（YAML），领域用插件或远程 Unit 接入；箱内可挂任意运行时（含 LangGraph / Mastra Agent）。
+**TypeScript 完整 Agent 编排标准库**——YAML 拓扑 + ControlFlow + 统一管线；跨项目时把另一个 **TS** 项目当 Unit（Workflow-as-Unit）。Python/Java Engine 移植为远期。
 
-> **Who / Why：** 给需要跨项目统一编排、又不想绑死某一家 Agent 框架的团队。  
-> **How：** YAML 画排班 → `uses` / bindings 注册 → Engine 按管线执行；复用时走 Workflow-as-Unit。
+> **Who / Why：** 需要可声明、可校验编排，且能把 TS 能力项目嵌进其他 TS 工作流的团队。  
+> **How：** `npm` 接入 → YAML / `createEngineFromYaml` → 需要时子项目暴露 `/execute`。
 
 License: MIT
 
@@ -13,20 +13,22 @@ License: MIT
 
 | | |
 |--|--|
-| **本地预览** | `npm run docs:dev`（源码 [`docs-web/`](./docs-web/)） |
+| **本地预览** | `npm run docs:dev`（[`docs-web/`](./docs-web/)） |
 | **部署 URL** | https://CoderYc0923.github.io/Uni-Flow/ |
+| **安装（自有 TS 项目）** | [docs-web/guide/install.md](./docs-web/guide/install.md) |
+| **跨项目 TS↔TS** | [docs-web/guide/cross-project.md](./docs-web/guide/cross-project.md) |
 | **为什么选（3W）** | [docs-web/why/three-w.md](./docs-web/why/three-w.md) |
-| **跨项目复用** | [docs-web/guide/cross-project.md](./docs-web/guide/cross-project.md) |
-| **vs LangGraph / Mastra** | [docs-web/why/vs-frameworks.md](./docs-web/why/vs-frameworks.md) |
 | **API 手册** | [docs-web/reference/](./docs-web/reference/) |
-| **示例** | [docs-web/examples/](./docs-web/examples/)（含 [Workflow-as-Unit](./examples/workflow-as-unit/)） |
+| **示例** | [examples/workflow-as-unit/](./examples/workflow-as-unit/) |
 | **AI 硬规矩** | [`AGENTS.md`](./AGENTS.md) |
 
 ---
 
-## 安装
+## 安装（消费者项目）
 
-Node.js ≥ 18：
+完整 Engine：**仅 TypeScript**。目标：`npm install uni-flow`（未发布时用 Git / `file:` path，见安装指南）。
+
+贡献者克隆本仓：
 
 ```bash
 npm install
@@ -95,6 +97,7 @@ npx uniflow validate ./examples/accounting-router.yaml
 |------|------|
 | vs LangGraph / 抗模式变动 | [`docs-web/why/`](./docs-web/why/) |
 | Schema | [`schemas/uniflow.workflow.schema.json`](./schemas/uniflow.workflow.schema.json) |
-| 跨语言 | [`examples/cross-lang/`](./examples/cross-lang/) |
+| 跨项目 TS↔TS | [`examples/workflow-as-unit/`](./examples/workflow-as-unit/) |
+| 跨语言 SDK（客户端） | [`examples/cross-lang/`](./examples/cross-lang/) |
 | 远程 Unit 契约 | [`docs/remote-unit-http-contract.md`](./docs/remote-unit-http-contract.md) |
 | 设计长文 | [`docs-web/architecture/design-longform.md`](./docs-web/architecture/design-longform.md) |

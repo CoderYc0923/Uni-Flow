@@ -12,6 +12,14 @@ export {
   YamlValidationError,
   YamlLoadError,
 } from './loader.js';
+export {
+  runWorkflowAsUnit,
+  createWorkflowAsUnitHttpHandler,
+} from './workflow-as-unit.js';
+export type {
+  RunWorkflowAsUnitOptions,
+  WorkflowAsUnitHttpHandlerOptions,
+} from './workflow-as-unit.js';
 export type {
   CreateEngineFromYamlOptions,
   UnitPlugin,

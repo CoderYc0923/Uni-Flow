@@ -1,12 +1,13 @@
 # 快速开始
 
-本节用 **Mock Sequential** 流水线演示进程内编排：不依赖 Orchestrator HTTP，也不调用真实 LLM。
+在 **自有 TypeScript 项目** 中依赖 `uni-flow` 后，用进程内 Engine 跑编排。  
+**不需要** Orchestrator HTTP，也不调用真实 LLM（本页用 Mock）。
 
-## 目标
+> 安装方式见 [安装](/guide/install)。完整 Engine 目前仅 TS。
 
-两个 Unit 顺序执行：`research` → `write`，结果写入 `SharedState` 的 `output.<unitId>`。
+## 路径 A：代码 API（Sequential Mock）
 
-## 完整示例
+两个 Unit：`research` → `write`。
 
 ```typescript
 import {
@@ -61,39 +62,54 @@ async function main() {
   });
 
   const result = await engine.run({ task: '写一篇 Uni-Flow 简介' });
-
-  console.log('runId:', result.runId);
-  console.log('completedUnits:', result.completedUnits);
-  console.log('output.write:', result.state['output.write']);
+  console.log(result.completedUnits, result.state['output.write']);
 }
 
 main();
 ```
 
-仓库内对应文件：[`examples/sequential-pipeline.ts`](https://github.com/CoderYc0923/Uni-Flow/blob/main/examples/sequential-pipeline.ts)。
+本仓库对照：[`examples/sequential-pipeline.ts`](https://github.com/CoderYc0923/Uni-Flow/blob/main/examples/sequential-pipeline.ts)。
 
-## 运行方式
+## 路径 B：YAML（推荐拓扑）
 
-```bash
-npm run build
-npx tsx examples/sequential-pipeline.ts
+```typescript
+import { createEngineFromYaml } from 'uni-flow';
+
+const engine = await createEngineFromYaml(`
+apiVersion: uniflow/v1
+kind: Workflow
+metadata:
+  id: qs-yaml
+spec:
+  units:
+    - id: a
+      uses: builtin.mock
+      config: { response: "first" }
+    - id: b
+      uses: builtin.mock
+      config: { response: "second" }
+  flow:
+    type: sequential
+    order: [a, b]
+`);
+
+const result = await engine.run({ task: 'hello' });
+console.log(result.state['output.b']);
 ```
 
-## 返回值说明
+编辑后校验：`npx uniflow validate path/to.yaml`（Schema only）。详见 [YAML 与 validate](/guide/yaml)。
 
-`engine.run()` 返回 `WorkflowResult`：
+## 返回值（`WorkflowResult`）
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `runId` | `string` | 本次运行 ID |
-| `completedUnits` | `string[]` | 已完成的 Unit ID 列表 |
-| `state` | `Record<string, unknown>` | 共享状态快照（含 `output.*`） |
-| `messages` | `WorkflowMessage[]` | 运行期消息（含 HITL 等） |
-| `duration` | `number` | 耗时（毫秒） |
-| `tokenUsage` | `number` | 累计 token |
-| `cost` | `number` | 累计估算成本 |
+| 字段 | 说明 |
+|------|------|
+| `runId` | 运行 ID |
+| `completedUnits` | 已完成 Unit |
+| `state` | 含 `output.<unitId>` 等 |
+| `duration` / `tokenUsage` / `cost` | 耗时与计量 |
 
 ## 下一步
 
-- 声明式 YAML 路径：[YAML 与 validate](/guide/yaml)
-- API 详情：[Engine 参考](/reference/engine)
+- 把另一个 **TS** 项目当 Unit：[跨项目复用](/guide/cross-project)
+- 注册真实插件：[uses 与插件](/guide/uses)
+- 需要 HTTP 注册/远程启 run 时再启 Orchestrator（[安装](/guide/install) 中的场景表）

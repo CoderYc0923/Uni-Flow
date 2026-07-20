@@ -1,87 +1,126 @@
-# 跨项目复用
+# 跨项目复用（TS↔TS）
 
-当你有两个（或更多）独立项目——例如 **RAG（TS）** 与 **智能客服（Python/Java）**——希望共用同一套编排规范，并把 RAG **当成客服工作流里的一个 Unit**，用这一页。
-
-跨语言只是边界上的常见结果，不是目标本身。多语言 SDK / greeter 演示见 [跨语言（手段）](/guide/cross-lang)。
-
-## 你要的双视图
-
-| 视角 | 形态 |
-|------|------|
-| **子项目对内** | 完整 Uni-Flow workflow（自己的 YAML / Engine / 部署） |
-| **父项目对外** | 一个标准 Unit：`AgentInput` → `AgentOutput` |
-
-推荐模式名：**Workflow-as-Unit**——Wrapper 收 `POST /execute`，内部跑完整子 workflow，再压成一次 Unit 输出。
+**主路径（近期）：** 两个 **TypeScript** 项目共用 Uni-Flow——子项目对内跑完整 workflow，对外暴露 `POST /execute`；父项目 YAML 用 bindings 把它当成**一个 Unit**。
 
 ```mermaid
 flowchart LR
-  P[父 workflow] --> U[Unit: child.capability]
-  U -->|HTTP POST /execute| W[Wrapper]
-  W --> C[子项目内部 workflow]
+  P[父 TS 项目<br/>YAML + Engine/Orch]
+  U[Unit: child.capability]
+  W[子 TS 项目<br/>/execute Wrapper]
+  C[子内部 workflow.yaml]
+  P --> U
+  U -->|HTTP| W
+  W --> C
   C --> W
   W -->|AgentOutput| U
 ```
 
-仓库最小示例：[`examples/workflow-as-unit/`](https://github.com/CoderYc0923/Uni-Flow/tree/main/examples/workflow-as-unit)。
+::: tip 能力边界
+**完整进程内 Engine 目前只有 TypeScript。** Python / Java 可做 HTTP SDK 或远程 Unit，但不能在本语言进程内跑完整 Uni-Flow ControlFlow（Engine 移植为远期）。
+:::
 
-## 四条控制通道（别混用）
+仓库示范（单仓模拟两部署）：[`examples/workflow-as-unit/`](https://github.com/CoderYc0923/Uni-Flow/tree/main/examples/workflow-as-unit)。
 
-| 通道 | 管什么 | 示例 |
-|------|--------|------|
-| ControlFlow / YAML | 拓扑：跑谁、顺序、分支 | Sequential / Router |
-| `policyOverrides` | 超时、重试、预算、熔断 | `timeout.unitMs` |
-| `contextPolicy` | Layer4 记忆/上下文装配 | 拉哪些 session 记忆 |
-| **`AgentInput.params`** | 父级传给子 capability 的**业务策略** | `topK`、`retrievalMode` |
+## 跟做：TS 父 + TS 子
 
-**优先级：** 运行时 `params` > `unit.config` 默认值 > 子服务内部默认。  
-**禁止：** 在 `params` 里放密钥；密钥走 bindings headers / secrets。
+### 1. 子项目（部署 B）
 
-### `params` 与 capability profile
+1. 依赖 `uni-flow`，编写内部 `child-internal.workflow.yaml`。
+2. 暴露 execute（可用包内助手）：
 
-Engine **只透传** `params`（`Record<string, unknown>`），不解析 RAG/客服语义。文档约定可用：
+```typescript
+import { createServer } from 'node:http';
+import { createWorkflowAsUnitHttpHandler } from 'uni-flow';
+
+const handler = createWorkflowAsUnitHttpHandler(yamlText, {
+  contentStateKey: 'output.answer', // 映射主输出
+});
+createServer(handler).listen(9201);
+```
+
+契约：[Remote Unit HTTP Contract](https://github.com/CoderYc0923/Uni-Flow/blob/main/docs/remote-unit-http-contract.md)（含可选 `input.params`）。
+
+### 2. 父项目（部署 A）
+
+父 YAML 只声明一个远程能力：
+
+```yaml
+# parent.workflow.yaml
+spec:
+  units:
+    - id: child
+      uses: child.capability
+  flow:
+    type: sequential
+    order: [child]
+```
+
+注册 bindings（endpoint 指向子 `/execute`）：
+
+```typescript
+await client.loadAndRegister(parentYaml, {
+  'child.capability': {
+    type: 'http',
+    endpoint: 'http://127.0.0.1:9201/execute',
+  },
+});
+await client.startWorkflow('parent-embeds-child', {
+  task: 'refund timing',
+  params: { $profile: 'rag.v1', mode: 'fast', topK: 5 },
+}, { sync: true });
+```
+
+父也可用**进程内** `createEngineFromYaml` + `bindings`，不一定启 Orchestrator。
+
+### 3. 一键跑通本仓 demo
+
+```bash
+npx vitest run tests/workflow-as-unit-demo.test.ts
+# 或
+npx tsx examples/workflow-as-unit/ts/run-demo.ts
+```
+
+## 双视图
+
+| 视角 | 形态 |
+|------|------|
+| **子对内** | 完整 Uni-Flow workflow（YAML + Engine） |
+| **父对外** | 标准 `AgentInput` → `AgentOutput` |
+
+## 四条控制通道
+
+| 通道 | 管什么 |
+|------|--------|
+| ControlFlow / YAML | 拓扑 |
+| `policyOverrides` | 超时 / 重试 / 预算 |
+| `contextPolicy` | Layer4 上下文装配 |
+| **`AgentInput.params`** | 父→子业务策略（如 `topK`） |
+
+优先级：`params` > `unit.config` 默认 > 子内部默认。  
+**禁止** 在 `params` 放密钥。
+
+### `params` / `$profile`
 
 ```json
 {
-  "task": "用户问：退款多久到账？",
-  "params": {
-    "$profile": "rag.v1",
-    "retrievalMode": "fast",
-    "topK": 5
-  }
+  "task": "...",
+  "params": { "$profile": "rag.v1", "retrievalMode": "fast", "topK": 5 }
 }
 ```
 
-| 约定 | 说明 |
-|------|------|
-| `$profile` | 如 `rag.v1`；由 Wrapper/插件解释 |
-| 版本 | 破坏性变更升 major（`v2`） |
-| 未知字段 | 建议忽略 |
-| 输出 | 稳定键可放 `AgentOutput.metadata`（如 `route`、`citations`）供父级消费 |
+Engine **只透传**；领域语义由子 Wrapper / 插件解释。
 
 ## 组合主路径 vs 旁路
 
 | 路径 | 用途 |
 |------|------|
-| **Unit `/execute`（主）** | 父 ControlFlow 嵌入子能力；走 HttpAdapter / bindings |
-| Orchestrator `POST /workflows/:id/runs`（旁路） | 独立触发、调试、批处理完整 workflow |
+| **Unit `/execute`** | 父图嵌入子能力（主） |
+| Orchestrator `.../runs` | 独立跑完整 workflow（旁路） |
 
-父级超时/重试仍由父级 `policyOverrides` 管外层；子内部步骤自治——父级**不**下发子节点级路由。
+## 与跨语言
 
-## 接入步骤（最短）
-
-1. 子项目实现内部 YAML，并写 Wrapper：`/execute` → `createEngineFromYaml` → `run` → `AgentOutput`。
-2. 父项目 YAML：`uses: child.capability`（或你的名字）。
-3. `from-yaml` 时 bindings：`{ "child.capability": { "type": "http", "endpoint": "http://.../execute" } }`。
-4. `startWorkflow` 传入 `{ task, params }`。
-
-详见 [uses 与插件](/guide/uses) 与 [Remote Unit 契约](https://github.com/CoderYc0923/Uni-Flow/blob/main/docs/remote-unit-http-contract.md)。
-
-## 与「跨语言」的关系
-
-- **目标：** 跨项目复用同一编排契约。  
-- **手段：** 各项目用本语言 SDK；跨部署用 HTTP Unit（恰好可跨语言）。  
-- **不要：** 为了炫技在同一工作流里故意混用多种语言子 Agent。
+跨语言只是「HTTP 边界」的副产品。近期请先跑通 **TS↔TS**。多语言 SDK 演示见 [跨语言（手段）](/guide/cross-lang)，勿理解为「Py/Java 已有完整 Engine」。
 
 ## 若你只记住一件事
 
-**子项目对内完整 workflow，对父级只是一个 Unit；业务旋钮走 `params`，拓扑仍在 YAML。**
+**两个 TS 项目：子对内完整 Uni-Flow，对外 `/execute`；父 YAML 只认一个 Unit + `params`。**

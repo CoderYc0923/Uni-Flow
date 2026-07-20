@@ -58,6 +58,8 @@ CLI `uniflow validate` 内部使用此函数（先读文件再校验）。
 | `resolveSchemaPath()` | 解析 Schema 文件路径 |
 | `registryFromBindings(bindings?)` | bindings → 插件注册表 |
 | `mergePluginRegistries(...parts)` | 合并多个注册表 |
+| `runWorkflowAsUnit(source, input, options?)` | Workflow-as-Unit：YAML → `AgentOutput` |
+| `createWorkflowAsUnitHttpHandler(source, options?)` | Node `POST /execute` 监听器工厂 |
 
 ## 错误类型
 
