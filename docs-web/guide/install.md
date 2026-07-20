@@ -4,10 +4,10 @@
 
 ## 你将完成什么
 
-在**自己的** Node/TS 项目里装上 `uni-flow`，并能写出一行：
+在**自己的** Node/TS 项目里装上 npm 包 **`virtual-uni-flow`**（产品名仍是 Uni-Flow），并能写出一行：
 
 ```typescript
-import { createEngineFromYaml } from 'uni-flow';
+import { createEngineFromYaml } from 'virtual-uni-flow';
 ```
 
 而不报「找不到模块」。
@@ -35,23 +35,25 @@ npm install typescript tsx --save-dev
 npx tsc --init
 ```
 
-## 步骤 1：安装 `uni-flow`
-
-包名见仓库根目录 `package.json` 的 `name` 字段（当前为 `uni-flow`）。
-
-### 方式 A：发布到 npm 之后（目标形态）
+## 步骤 1：安装 `virtual-uni-flow`（推荐）
 
 ```bash
-npm install uni-flow
+npm install virtual-uni-flow
 ```
 
-### 方式 B：今日常用 — Git 依赖
+registry：https://www.npmjs.com/package/virtual-uni-flow  
+
+> 说明：npm 上 `uni-flow` 与已有包名过于相似不可用，故公开发布名为 **`virtual-uni-flow`**。CLI 二进制仍为 `uniflow`。
+
+### 备选：Git 依赖
 
 ```bash
 npm install github:CoderYc0923/Uni-Flow#main
 ```
 
-### 方式 C：本地 path（你正在改 Uni-Flow 本仓时）
+安装后仍按 `package.json` 的 `name` 导入，即 `from 'virtual-uni-flow'`。
+
+### 备选：本地 path（你正在改 Uni-Flow 本仓时）
 
 ```bash
 # 终端 1：Uni-Flow 仓库
@@ -60,7 +62,7 @@ npm install
 npm run build
 
 # 在你的应用 package.json 的 dependencies 中写：
-# "uni-flow": "file:../Uni-Flow"
+# "virtual-uni-flow": "file:../Uni-Flow"
 # 然后：
 npm install
 ```
@@ -72,7 +74,7 @@ npm install
 在应用根目录创建 `smoke-import.mts`（或 `.ts`）：
 
 ```typescript
-import { createEngineFromYaml, createMockAdapter } from 'uni-flow';
+import { createEngineFromYaml, createMockAdapter } from 'virtual-uni-flow';
 
 console.log('ok', typeof createEngineFromYaml, typeof createMockAdapter);
 ```
@@ -91,7 +93,7 @@ npx tsx smoke-import.mts
 ok function function
 ```
 
-若出现 `Cannot find module 'uni-flow'`：回到步骤 1，确认 `node_modules/uni-flow` 存在，且本仓 path 依赖已 `build`。
+若出现 `Cannot find module 'virtual-uni-flow'`：回到步骤 1，确认 `node_modules/virtual-uni-flow` 存在，且本仓 path 依赖已 `build`。
 
 ## 步骤 3（可选）：贡献者克隆本仓库
 

@@ -26,7 +26,18 @@ License: MIT
 
 ## 安装（消费者项目）
 
-完整 Engine：**仅 TypeScript**。目标：`npm install uni-flow`（未发布时用 Git / `file:` path，见安装指南）。
+完整 Engine：**仅 TypeScript**。
+
+```bash
+npm install virtual-uni-flow
+```
+
+```typescript
+import { createEngineFromYaml } from 'virtual-uni-flow';
+```
+
+包页：https://www.npmjs.com/package/virtual-uni-flow  
+（npm 名因与已有 `uniflow` 冲突，不能用 `uni-flow`。）更细步骤见[安装指南](./docs-web/guide/install.md)。
 
 贡献者克隆本仓：
 
@@ -47,8 +58,8 @@ import {
   SequentialFlow,
   createMockAdapter,
   DEFAULT_CONTEXT_POLICY,
-} from 'uni-flow';
-import type { WorkflowUnit } from 'uni-flow';
+} from 'virtual-uni-flow';
+import type { WorkflowUnit } from 'virtual-uni-flow';
 
 function makeUnit(id: string, prefix: string): WorkflowUnit {
   return {

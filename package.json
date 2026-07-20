@@ -1,7 +1,9 @@
 {
-  "name": "uni-flow",
+  "name": "virtual-uni-flow",
   "version": "0.1.0",
-  "description": "Production-grade unified agent workflow orchestration",
+  "description": "Production-grade unified agent workflow orchestration (TypeScript Engine, YAML, Workflow-as-Unit)",
+  "license": "MIT",
+  "author": "CoderYc0923",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,11 +15,13 @@
     "./schemas/uniflow.workflow.schema.json": "./schemas/uniflow.workflow.schema.json"
   },
   "bin": {
-    "uniflow": "./dist/cli/uniflow.js"
+    "uniflow": "dist/cli/uniflow.js"
   },
   "files": [
     "dist",
-    "schemas"
+    "schemas",
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
     "build": "tsc",
@@ -25,9 +29,31 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "uniflow": "node ./dist/cli/uniflow.js",
+    "prepublishOnly": "npm run build",
     "docs:dev": "vitepress dev docs-web",
     "docs:api": "typedoc",
     "docs:build": "npm run docs:api && vitepress build docs-web"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CoderYc0923/Uni-Flow.git"
+  },
+  "homepage": "https://CoderYc0923.github.io/Uni-Flow/",
+  "bugs": {
+    "url": "https://github.com/CoderYc0923/Uni-Flow/issues"
+  },
+  "keywords": [
+    "agent",
+    "workflow",
+    "orchestration",
+    "multi-agent",
+    "yaml",
+    "typescript",
+    "uniflow"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "@mariozechner/pi-agent-core": "^0.73.1",

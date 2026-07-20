@@ -44,8 +44,8 @@ import {
   SequentialFlow,
   createMockAdapter,
   DEFAULT_CONTEXT_POLICY,
-} from 'uni-flow';
-import type { WorkflowUnit } from 'uni-flow';
+} from 'virtual-uni-flow';
+import type { WorkflowUnit } from 'virtual-uni-flow';
 
 /** 造一个假 Unit：读 SharedState 的 task，写出 output.<id> */
 function makeUnit(id: string, prefix: string): WorkflowUnit {
@@ -159,7 +159,7 @@ spec:
 新建 `quickstart-b.ts`（与 YAML 同目录，或改路径）：
 
 ```typescript
-import { createEngineFromYaml } from 'uni-flow';
+import { createEngineFromYaml } from 'virtual-uni-flow';
 
 async function main() {
   const engine = await createEngineFromYaml('./quickstart.workflow.yaml');
